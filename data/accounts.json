@@ -1,0 +1,57 @@
+[
+  {
+    "id": "fb",
+    "name": "Facebook Page",
+    "handle": "Naria Holidays Ltd",
+    "connected": true,
+    "followers": "48.5K",
+    "color": "#1877F2",
+    "supports": ["image", "video"]
+  },
+  {
+    "id": "ig",
+    "name": "Instagram Business",
+    "handle": "@nariaholidays",
+    "connected": true,
+    "followers": "32.1K",
+    "color": "#E4405F",
+    "supports": ["image", "video"]
+  },
+  {
+    "id": "yt",
+    "name": "YouTube Shorts & Videos",
+    "handle": "Naria Holidays",
+    "connected": true,
+    "followers": "15.8K",
+    "color": "#FF0000",
+    "supports": ["video"]
+  },
+  {
+    "id": "tt",
+    "name": "TikTok",
+    "handle": "@nariaholidays",
+    "connected": true,
+    "followers": "27.4K",
+    "color": "#00f2fe",
+    "supports": ["video"]
+  },
+  {
+    "id": "li",
+    "name": "LinkedIn Page",
+    "handle": "Naria Holidays",
+    "connected": true,
+    "followers": "8.9K",
+    "color": "#0A66C2",
+    "supports": ["image", "video"]
+  },
+  {
+    "id": "tw",
+    "name": "X / Twitter",
+    "handle": "@nariaholidays",
+    "connected": true,
+    "followers": "12.3K",
+    "color": "#1DA1F2",
+    "supports": ["image", "video"]
+  }
+]
+

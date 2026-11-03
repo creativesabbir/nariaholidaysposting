@@ -1,0 +1,22 @@
+[
+  {
+    "id": "usr_abir",
+    "name": "Abir Hasan Sabbir",
+    "email": "excreative.info@gmail.com",
+    "password": "password123",
+    "role": "Founder & Travel Consultant",
+    "isAdmin": true,
+    "avatar": "/uploads/1793709735770-1705d046.jpg",
+    "isCurrent": true
+  },
+  {
+    "id": "usr_naria_ops",
+    "name": "Naria Holidays Team",
+    "email": "info@nariaholidays.com",
+    "password": "password123",
+    "role": "Customer Support & Operations",
+    "isAdmin": false,
+    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80",
+    "isCurrent": false
+  }
+]

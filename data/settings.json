@@ -1,0 +1,77 @@
+{
+  "n8n": {
+    "webhookUrl": "https://abirhasanauto12.app.n8n.cloud/webhook/nh-posting-agent",
+    "secretToken": "",
+    "autoDispatch": true,
+    "lastTestedAt": "2026-11-03T11:48:12.062Z",
+    "lastStatus": "success"
+  },
+  "platforms": {
+    "tiktok": {
+      "name": "TikTok",
+      "status": "active",
+      "enabled": true
+    },
+    "instagram": {
+      "name": "Instagram",
+      "enabled": true,
+      "status": "active"
+    },
+    "linkedin": {
+      "name": "LinkedIn",
+      "status": "active",
+      "enabled": true
+    },
+    "youtube": {
+      "name": "YouTube",
+      "status": "active",
+      "enabled": true
+    },
+    "facebook": {
+      "name": "Facebook",
+      "status": "active",
+      "enabled": true
+    },
+    "x": {
+      "name": "X / Twitter",
+      "enabled": true,
+      "status": "active"
+    },
+    "pinterest": {
+      "name": "Pinterest",
+      "status": "active",
+      "enabled": true
+    },
+    "reddit": {
+      "name": "Reddit",
+      "enabled": true,
+      "status": "active"
+    },
+    "threads": {
+      "name": "Threads",
+      "status": "active",
+      "enabled": true
+    },
+    "bluesky": {
+      "name": "Bluesky",
+      "status": "active",
+      "enabled": true
+    },
+    "discord": {
+      "name": "Discord",
+      "status": "active",
+      "enabled": true
+    },
+    "telegram": {
+      "name": "Telegram",
+      "status": "active",
+      "enabled": true
+    },
+    "google_business": {
+      "name": "Google Business",
+      "status": "active",
+      "enabled": true
+    }
+  },
+  "supabase": {}
+}
