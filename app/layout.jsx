@@ -4,6 +4,14 @@ import SharedLayout from '@/components/SharedLayout';
 export const metadata = {
   title: 'Naria Holidays — Social Media Automation',
   description: 'Automated social media posting engine for Naria Holidays',
+  icons: {
+    icon: [
+      { url: '/logo-icon.png' },
+      { url: '/favicon.ico' }
+    ],
+    shortcut: '/logo-icon.png',
+    apple: '/logo-icon.png'
+  }
 };
 
 export default function RootLayout({ children }) {

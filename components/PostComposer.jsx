@@ -176,8 +176,10 @@ export default function PostComposer({
     secondaryAction: null
   });
 
-  const handleFileChange = async (e) => {
-    const files = Array.from(e.target.files || []);
+  // Drag and Drop state
+  const [isDragging, setIsDragging] = useState(false);
+
+  const processFiles = async (files) => {
     if (!files || files.length === 0) return;
 
     if (activeTab === 'image') {
@@ -339,6 +341,41 @@ export default function PostComposer({
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    processFiles(files);
+    e.target.value = '';
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length > 0) {
+      processFiles(files);
     }
   };
 
@@ -728,7 +765,17 @@ export default function PostComposer({
                   ))}
 
                   {/* Add More Tile */}
-                  <label className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors bg-white hover:bg-blue-50/40 aspect-square p-2 text-center group shadow-2xs">
+                  <label 
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors aspect-square p-2 text-center group shadow-2xs ${
+                      isDragging 
+                        ? 'border-blue-600 bg-blue-100/50 ring-2 ring-blue-500 scale-[1.02]' 
+                        : 'border-slate-300 hover:border-blue-500 bg-white hover:bg-blue-50/40'
+                    }`}
+                  >
                     <input
                       type="file"
                       multiple
@@ -740,13 +787,23 @@ export default function PostComposer({
                       <Plus className="w-4 h-4" />
                     </div>
                     <span className="text-[11px] font-bold text-slate-700 group-hover:text-blue-600">
-                      Add More
+                      {isDragging ? 'Drop Here' : 'Add More'}
                     </span>
                   </label>
                 </div>
               </div>
             ) : (
-              <label className="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-blue-50/20">
+              <label 
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                  isDragging 
+                    ? 'border-blue-600 bg-blue-50/80 ring-4 ring-blue-500/10 scale-[0.99] shadow-inner' 
+                    : 'border-slate-200 hover:border-blue-400 bg-slate-50/50 hover:bg-blue-50/20'
+                }`}
+              >
                 <input
                   type="file"
                   multiple
@@ -754,11 +811,15 @@ export default function PostComposer({
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <div className="w-11 h-11 rounded-full bg-white border border-slate-200 flex items-center justify-center text-blue-600 mb-2.5 shadow-xs">
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-2.5 shadow-xs transition-all ${
+                  isDragging 
+                    ? 'bg-blue-600 text-white scale-110' 
+                    : 'bg-white border border-slate-200 text-blue-600'
+                }`}>
                   <Upload className="w-5 h-5" />
                 </div>
-                <p className="text-xs font-semibold text-slate-800">
-                  {isUploading ? 'Uploading photos...' : 'Click to browse or drag & drop multiple photos'}
+                <p className={`text-xs font-semibold transition-colors ${isDragging ? 'text-blue-600 font-bold' : 'text-slate-800'}`}>
+                  {isDragging ? 'Drop photos here to upload' : isUploading ? 'Uploading photos...' : 'Click to browse or drag & drop multiple photos'}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-1">
                   Supports multiple image upload: PNG, JPG, WebP
@@ -875,18 +936,32 @@ export default function PostComposer({
               </div>
             ) : (
               /* IDLE DROP ZONE */
-              <label className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all bg-slate-50/50 hover:bg-blue-50/20 group">
+              <label 
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                  isDragging 
+                    ? 'border-blue-600 bg-blue-50/80 ring-4 ring-blue-500/10 scale-[0.99] shadow-inner' 
+                    : 'border-slate-300 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20'
+                } group`}
+              >
                 <input
                   type="file"
                   accept="video/*"
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 group-hover:border-blue-300 flex items-center justify-center text-blue-600 mb-2.5 shadow-xs group-hover:scale-105 transition-all">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2.5 shadow-xs transition-all ${
+                  isDragging 
+                    ? 'bg-blue-600 text-white scale-110' 
+                    : 'bg-white border border-slate-200 group-hover:border-blue-300 text-blue-600 group-hover:scale-105'
+                }`}>
                   <Video className="w-6 h-6" />
                 </div>
-                <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                  Click to browse or drag & drop video clip
+                <p className={`text-xs font-bold transition-colors ${isDragging ? 'text-blue-600' : 'text-slate-800 group-hover:text-blue-600'}`}>
+                  {isDragging ? 'Drop video here to upload' : 'Click to browse or drag & drop video clip'}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-1">
                   Supports vertical (9:16) & horizontal (16:9) MP4, MOV, WebM

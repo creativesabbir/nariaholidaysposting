@@ -114,7 +114,7 @@ export async function POST(request) {
       mediaUrls,
       thumbnailUrl,
       platforms: platforms.length > 0 ? platforms : ['facebook', 'instagram'],
-      status: isScheduled ? 'scheduled' : 'published',
+      status: isScheduled ? 'scheduled' : 'pending', // Starts as pending until n8n finishes publishing
       createdAt: new Date().toISOString(),
       scheduledAt: isScheduled ? scheduledAt : null,
       postedBy: {
@@ -190,6 +190,10 @@ export async function POST(request) {
       }
 
       if (n8nUrl && autoDispatch && n8nUrl.startsWith('http') && !n8nUrl.includes('your-domain')) {
+        const hostHeader = request.headers.get('host') || 'postnariaholidays.netlify.app';
+        const proto = request.headers.get('x-forwarded-proto') || 'https';
+        const callbackUrl = `${proto}://${hostHeader}/api/webhooks/n8n-callback`;
+
         const payload = {
           event: isScheduled ? 'post.scheduled' : 'post.publish',
           postId: newPost.id,
@@ -203,6 +207,13 @@ export async function POST(request) {
           publishedBy: newPost.postedBy?.name || 'Abir Hasan Sabbir',
           publishedByEmail: newPost.postedBy?.email || '',
           scheduledAt: newPost.scheduledAt,
+          callbackUrl: callbackUrl,
+          statusCallbackUrl: callbackUrl,
+          callbackMethod: 'POST',
+          callbackSampleBody: {
+            postId: newPost.id,
+            status: 'published'
+          },
           timestamp: new Date().toISOString()
         };
 
@@ -223,8 +234,20 @@ export async function POST(request) {
 
           if (n8nRes.ok) {
             newPost.n8nDispatched = true;
+
+            // If n8n responded synchronously with { status: "published" }, update immediately
+            try {
+              const resJson = await n8nRes.json().catch(() => null);
+              if (resJson?.status === 'published' || resJson?.published === true) {
+                newPost.status = 'published';
+              }
+            } catch (e) {}
+
             if (isSupabaseConfigured && supabaseAdmin) {
-              await supabaseAdmin.from('posts').update({ n8n_dispatched: true }).eq('id', newPost.id);
+              await supabaseAdmin.from('posts').update({ 
+                n8n_dispatched: true,
+                status: newPost.status 
+              }).eq('id', newPost.id);
             }
           } else {
             console.warn('n8n dispatch non-200 status:', n8nRes.status);
@@ -239,7 +262,11 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      message: isScheduled ? 'Post scheduled successfully!' : 'Post published successfully!',
+      message: isScheduled 
+        ? 'Post scheduled successfully!' 
+        : newPost.status === 'published'
+        ? 'Post published successfully!'
+        : 'Campaign dispatched to n8n! Status is pending until workflow finishes.',
       post: newPost
     }, { status: 201 });
   } catch (err) {

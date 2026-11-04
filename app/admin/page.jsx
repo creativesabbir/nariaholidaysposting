@@ -25,7 +25,9 @@ import {
   Shield,
   Layers,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Copy,
+  Check
 } from 'lucide-react';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { 
@@ -72,6 +74,76 @@ const ALL_PLATFORMS = [
   { id: 'reddit', name: 'Reddit', icon: RedditIcon, color: 'text-orange-600', defaultEnabled: true }
 ];
 
+const N8N_PAYLOAD_EXAMPLES = {
+  image: {
+    event: "post.publish",
+    postId: "post-1793717687359",
+    type: "image",
+    caption: "🌍 ইউরোপ-আমেরিকাসহ জনপ্রিয় গন্তব্যের ভিসা—সাশ্রয়ী রেটে, সহজ প্রসেসে! ✨\n\nভিসা নিয়ে আর দুশ্চিন্তা নয়! আপনার পছন্দের গন্তব্যের Visa Processing-এর পুরো প্রক্রিয়ায় পাশে আছে Naria Holidays। 🧳✈️\n\n#NariaHolidays #TravelBangladesh #HolidayPackages",
+    mediaUrls: [
+      "https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg",
+      "https://i.ibb.co/C3bbTVr6/sajek-valley-tour.jpg"
+    ],
+    mediaUrl: "https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg",
+    platforms: ["facebook", "instagram", "linkedin", "tiktok"],
+    author: {
+      id: "d2854f01-aeb1-4d99-9908-86bdf0380044",
+      name: "Abir Hasan Sabbir",
+      email: "excreative.info@gmail.com",
+      role: "Founder & Travel Consultant",
+      avatar: "https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg"
+    },
+    publishedBy: "Abir Hasan Sabbir",
+    publishedByEmail: "excreative.info@gmail.com",
+    scheduledAt: null,
+    timestamp: "2026-11-04T10:45:00.000Z"
+  },
+  video: {
+    event: "post.publish",
+    postId: "post-1793711339918",
+    type: "video",
+    caption: "Experience Cox's Bazar Sunset like never before with Naria Holidays Premium Tour Package! 🌅🏝️ #CoxsBazar #ExploreWithNaria",
+    mediaUrls: [
+      "https://litter.catbox.moe/5avjkc.mp4"
+    ],
+    mediaUrl: "https://litter.catbox.moe/5avjkc.mp4",
+    platforms: ["tiktok", "youtube", "facebook", "instagram"],
+    author: {
+      id: "d2854f01-aeb1-4d99-9908-86bdf0380044",
+      name: "Abir Hasan Sabbir",
+      email: "excreative.info@gmail.com",
+      role: "Founder & Travel Consultant",
+      avatar: "https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg"
+    },
+    publishedBy: "Abir Hasan Sabbir",
+    publishedByEmail: "excreative.info@gmail.com",
+    scheduledAt: null,
+    timestamp: "2026-11-04T10:45:00.000Z"
+  },
+  scheduled: {
+    event: "post.scheduled",
+    postId: "post-1793720491024",
+    type: "image",
+    caption: "Exclusive Early Bird Offer for Sajek Valley Winter Tour 2026! 🌄 Book your seat today! #SajekValley #NariaHolidays",
+    mediaUrls: [
+      "https://i.ibb.co/C3bbTVr6/sajek-valley-tour.jpg"
+    ],
+    mediaUrl: "https://i.ibb.co/C3bbTVr6/sajek-valley-tour.jpg",
+    platforms: ["facebook", "instagram", "threads"],
+    author: {
+      id: "d2854f01-aeb1-4d99-9908-86bdf0380044",
+      name: "Abir Hasan Sabbir",
+      email: "excreative.info@gmail.com",
+      role: "Founder & Travel Consultant",
+      avatar: "https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg"
+    },
+    publishedBy: "Abir Hasan Sabbir",
+    publishedByEmail: "excreative.info@gmail.com",
+    scheduledAt: "2026-11-08T19:30:00",
+    timestamp: "2026-11-04T10:45:00.000Z"
+  }
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('users'); // 'users', 'n8n', 'platforms'
@@ -102,9 +174,19 @@ export default function AdminPage() {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isGeneralUploadOpen, setIsGeneralUploadOpen] = useState(false);
 
-  // n8n testing state
+  // n8n testing & payload example states
   const [isTestingN8n, setIsTestingN8n] = useState(false);
   const [n8nTestResult, setN8nTestResult] = useState(null);
+  const [activePayloadTab, setActivePayloadTab] = useState('image'); // 'image' | 'video' | 'scheduled'
+  const [copiedPayload, setCopiedPayload] = useState(false);
+
+  const handleCopyPayload = (text) => {
+    try {
+      navigator.clipboard.writeText(text);
+      setCopiedPayload(true);
+      setTimeout(() => setCopiedPayload(false), 2000);
+    } catch (e) {}
+  };
 
   // Status modal
   const [alertConfig, setAlertConfig] = useState({
@@ -868,23 +950,142 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* Sample Payload */}
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <span className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-2">
-                  Payload Sent to n8n Webhook:
-                </span>
-                <pre className="p-4 bg-slate-900 text-slate-200 rounded-2xl text-[11px] font-mono overflow-x-auto leading-relaxed">
-{`{
-  "event": "post.publish",
-  "postId": "post_1793708821",
-  "caption": "Special Luxury Tour in Sylhet...",
-  "mediaUrls": ["/uploads/tea-resort.jpg"],
-  "platforms": ["facebook", "instagram", "tiktok"],
-  "publishedBy": "Sabbir Ahmed",
-  "publishedByEmail": "sabbir@nariaholidays.com",
-  "timestamp": "${new Date().toISOString()}"
-}`}
+              {/* Comprehensive n8n Payload Examples Section */}
+              <div className="mt-6 pt-6 border-t border-slate-200/80 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      Expected n8n Webhook Payload Schema
+                    </h4>
+                    <p className="text-slate-500 text-[11px] mt-0.5">
+                      Select an event type below to see the exact JSON structure dispatched to your n8n automation node.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCopyPayload(JSON.stringify(N8N_PAYLOAD_EXAMPLES[activePayloadTab], null, 2))}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors self-start sm:self-auto cursor-pointer shadow-2xs"
+                  >
+                    {copiedPayload ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                        <span className="text-emerald-700 font-bold">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Copy JSON</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Sub-tab pills for Image, Video, and Scheduled examples */}
+                <div className="inline-flex p-1 bg-slate-100 rounded-xl space-x-1">
+                  <button
+                    type="button"
+                    onClick={() => setActivePayloadTab('image')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      activePayloadTab === 'image'
+                        ? 'bg-white text-blue-600 shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Image Post (Publish)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActivePayloadTab('video')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      activePayloadTab === 'video'
+                        ? 'bg-white text-blue-600 shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Video Post (Publish)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActivePayloadTab('scheduled')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      activePayloadTab === 'scheduled'
+                        ? 'bg-white text-blue-600 shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Scheduled Post
+                  </button>
+                </div>
+
+                {/* Interactive JSON viewer */}
+                <pre className="p-4 sm:p-5 bg-slate-900 text-emerald-400 rounded-2xl text-[11px] font-mono overflow-x-auto leading-relaxed border border-slate-800 shadow-inner max-h-96">
+{JSON.stringify(N8N_PAYLOAD_EXAMPLES[activePayloadTab], null, 2)}
                 </pre>
+
+                {/* Field Dictionary / Key Reference Table */}
+                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50/50">
+                  <div className="px-4 py-2.5 bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    n8n Payload Field Dictionary
+                  </div>
+                  <div className="divide-y divide-slate-100 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">event</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string</div>
+                      <div className="sm:col-span-6 text-slate-600">Event type: <code className="bg-slate-200/80 px-1 py-0.5 rounded text-[11px]">post.publish</code> (instant) or <code className="bg-slate-200/80 px-1 py-0.5 rounded text-[11px]">post.scheduled</code></div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">postId</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string</div>
+                      <div className="sm:col-span-6 text-slate-600">Unique timestamp-based post identifier in Supabase database.</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">type</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">&apos;image&apos; | &apos;video&apos;</div>
+                      <div className="sm:col-span-6 text-slate-600">Content type indicator to branch workflows in n8n (e.g. IF node).</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">caption</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string</div>
+                      <div className="sm:col-span-6 text-slate-600">Full promotional message including line breaks, emojis, and hashtags.</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">mediaUrls</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string[]</div>
+                      <div className="sm:col-span-6 text-slate-600">Array of direct public CDN URLs (ImgBB direct image links or MP4 stream link).</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">mediaUrl</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string</div>
+                      <div className="sm:col-span-6 text-slate-600">Primary cover image or video URL string for easy single-value mapping.</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">platforms</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string[]</div>
+                      <div className="sm:col-span-6 text-slate-600">Selected target social accounts (e.g. <code className="bg-slate-200/80 px-1 py-0.5 rounded text-[11px]">[&quot;facebook&quot;, &quot;instagram&quot;, &quot;tiktok&quot;]</code>).</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">publishedBy</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string</div>
+                      <div className="sm:col-span-6 text-slate-600">Name of the logged-in team member who authored and submitted the post.</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">publishedByEmail</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string</div>
+                      <div className="sm:col-span-6 text-slate-600">Email address of the author for tracking and team notifications.</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">scheduledAt</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string | null</div>
+                      <div className="sm:col-span-6 text-slate-600">Target publication ISO string (e.g. 2026-11-08T19:30:00) or null if published now.</div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
+                      <div className="sm:col-span-3 font-mono font-bold text-blue-600">timestamp</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">string (ISO)</div>
+                      <div className="sm:col-span-6 text-slate-600">Exact UTC timestamp when the post was dispatched to n8n.</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -13,35 +13,60 @@ import {
   PlusCircle,
   Search,
   Calendar,
-  Filter
+  Filter,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { fetchPosts, deletePost } from '@/lib/api';
 
 export default function HistoryPage() {
   const [posts, setPosts] = useState([]);
-  const [filterType, setFilterType] = useState('all'); // all, image, video, scheduled, published
+  const [filterType, setFilterType] = useState('all'); // all, pending, published, scheduled, image, video
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Modal states for delete confirmation and feedback
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, postId: null });
   const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, title: '', message: '', type: 'success' });
 
-  const loadPostsData = async () => {
+  const loadPostsData = async (showSkeleton = true) => {
     try {
-      setIsLoading(true);
+      if (showSkeleton) setIsLoading(true);
+      else setIsRefreshing(true);
       const pList = await fetchPosts();
       setPosts(pList || []);
     } catch (err) {
       console.error('Failed to load history data:', err);
     } finally {
-      setIsLoading(false);
+      if (showSkeleton) setIsLoading(false);
+      else setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    loadPostsData();
+    loadPostsData(true);
   }, []);
+
+  // Auto-sync interval whenever any post is 'pending' (waiting for n8n callback)
+  // Ensures UI auto-updates to 'Published' even if n8n takes 10-20 minutes
+  useEffect(() => {
+    const hasPending = posts.some(p => p.status === 'pending');
+    if (!hasPending) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const latest = await fetchPosts();
+        if (Array.isArray(latest)) {
+          setPosts(latest);
+        }
+      } catch (e) {
+        console.error('Silent background sync error:', e);
+      }
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [posts]);
 
   const confirmDeletePost = async () => {
     const id = deleteModal.postId;
@@ -87,9 +112,12 @@ export default function HistoryPage() {
     });
   };
 
+  const pendingCount = posts.filter(p => p.status === 'pending').length;
+
   const filteredPosts = posts.filter((post) => {
     if (filterType === 'image' && post.type !== 'image') return false;
     if (filterType === 'video' && post.type !== 'video') return false;
+    if (filterType === 'pending' && post.status !== 'pending') return false;
     if (filterType === 'scheduled' && post.status !== 'scheduled') return false;
     if (filterType === 'published' && post.status !== 'published') return false;
 
@@ -139,24 +167,15 @@ export default function HistoryPage() {
             All Posts ({posts.length})
           </button>
           <button
-            onClick={() => setFilterType('image')}
-            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap font-semibold cursor-pointer ${
-              filterType === 'image'
-                ? 'bg-white text-blue-600 shadow-xs'
+            onClick={() => setFilterType('pending')}
+            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap font-semibold cursor-pointer flex items-center space-x-1.5 ${
+              filterType === 'pending'
+                ? 'bg-white text-amber-700 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Images
-          </button>
-          <button
-            onClick={() => setFilterType('video')}
-            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap font-semibold cursor-pointer ${
-              filterType === 'video'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Videos
+            {pendingCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
+            <span>Pending {pendingCount > 0 ? `(${pendingCount})` : ''}</span>
           </button>
           <button
             onClick={() => setFilterType('published')}
@@ -178,18 +197,49 @@ export default function HistoryPage() {
           >
             Scheduled
           </button>
+          <button
+            onClick={() => setFilterType('image')}
+            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap font-semibold cursor-pointer ${
+              filterType === 'image'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Images
+          </button>
+          <button
+            onClick={() => setFilterType('video')}
+            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap font-semibold cursor-pointer ${
+              filterType === 'video'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Videos
+          </button>
         </div>
 
-        {/* Search Input */}
-        <div className="relative min-w-[260px]">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by caption or author..."
-            className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 shadow-2xs"
-          />
+        {/* Search Input and Refresh Button */}
+        <div className="flex items-center space-x-2">
+          <div className="relative min-w-[220px] sm:min-w-[260px] flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by caption or author..."
+              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 shadow-2xs"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => loadPostsData(false)}
+            disabled={isRefreshing}
+            title="Refresh campaign list"
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-2xs cursor-pointer flex-shrink-0"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
+          </button>
         </div>
       </div>
 
@@ -227,7 +277,9 @@ export default function HistoryPage() {
         ) : (
           <div className="divide-y divide-slate-100">
             {filteredPosts.map((post) => {
+              const isPending = post.status === 'pending';
               const isScheduled = post.status === 'scheduled';
+              const isFailed = post.status === 'failed';
               const postImage = (post.mediaUrls && post.mediaUrls[0]) || post.mediaUrl;
 
               return (
@@ -264,13 +316,23 @@ export default function HistoryPage() {
                     {/* Post Info */}
                     <div className="space-y-1.5 overflow-hidden">
                       <div className="flex items-center space-x-2 flex-wrap">
-                        {isScheduled ? (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        {isPending ? (
+                          <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <RefreshCw className="w-3 h-3 animate-spin text-amber-600" />
+                            <span>Pending (n8n Processing)</span>
+                          </span>
+                        ) : isScheduled ? (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                             <Clock className="w-3 h-3" />
                             <span>Scheduled</span>
                           </span>
+                        ) : isFailed ? (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            <AlertCircle className="w-3 h-3" />
+                            <span>Failed</span>
+                          </span>
                         ) : (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle2 className="w-3 h-3 stroke-[3]" />
                             <span>Published</span>
                           </span>
@@ -279,7 +341,9 @@ export default function HistoryPage() {
                         <span className="text-[11px] text-slate-400 flex items-center space-x-1">
                           <Calendar className="w-3 h-3" />
                           <span>
-                            {isScheduled
+                            {isPending
+                              ? `Dispatched • ${formatDate(post.createdAt)}`
+                              : isScheduled
                               ? `For ${formatDate(post.scheduledAt)}`
                               : `On ${formatDate(post.publishedAt || post.createdAt)}`}
                           </span>
