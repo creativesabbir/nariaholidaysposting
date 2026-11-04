@@ -285,6 +285,25 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Post ID is required' }, { status: 400 });
     }
 
+    // Role verification: ensure only administrators can delete campaign posts
+    const sessionCookie = request.cookies.get('nh_session')?.value;
+    let user = null;
+    if (sessionCookie) {
+      try {
+        let val = sessionCookie;
+        if (val.includes('%')) val = decodeURIComponent(val);
+        if (val.includes('%')) val = decodeURIComponent(val);
+        user = JSON.parse(val);
+      } catch (e) {}
+    }
+
+    const isAdmin = Boolean(user?.isAdmin || user?.role?.toLowerCase().includes('admin'));
+    if (!isAdmin) {
+      return NextResponse.json({ 
+        error: 'Unauthorized: Only admins have permission to delete campaign posts' 
+      }, { status: 403 });
+    }
+
     // 1. Delete from Supabase Database
     if (isSupabaseConfigured && supabaseAdmin) {
       try {

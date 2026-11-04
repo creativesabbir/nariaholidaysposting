@@ -17,9 +17,10 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
-import { fetchPosts, deletePost } from '@/lib/api';
+import { fetchPosts, deletePost, fetchCurrentUser } from '@/lib/api';
 
 export default function HistoryPage() {
+  const [currentUser, setCurrentUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [filterType, setFilterType] = useState('all'); // all, pending, published, scheduled, image, video
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +30,17 @@ export default function HistoryPage() {
   // Modal states for delete confirmation and feedback
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, postId: null });
   const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, title: '', message: '', type: 'success' });
+
+  // Admin permission flag
+  const isAdmin = Boolean(currentUser?.isAdmin || currentUser?.role?.toLowerCase().includes('admin'));
+
+  useEffect(() => {
+    fetchCurrentUser()
+      .then(user => {
+        if (user) setCurrentUser(user);
+      })
+      .catch(() => {});
+  }, []);
 
   const loadPostsData = async (showSkeleton = true) => {
     try {
@@ -69,6 +81,16 @@ export default function HistoryPage() {
   }, [posts]);
 
   const confirmDeletePost = async () => {
+    if (!isAdmin) {
+      setFeedbackModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Action Restricted',
+        message: 'Only administrators have permission to delete campaign posts.'
+      });
+      return;
+    }
+
     const id = deleteModal.postId;
     setDeleteModal({ isOpen: false, postId: null });
     if (!id) return;
@@ -381,17 +403,19 @@ export default function HistoryPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center space-x-2 self-end sm:self-center">
-                    <button
-                      type="button"
-                      onClick={() => setDeleteModal({ isOpen: true, postId: post.id })}
-                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100 cursor-pointer"
-                      title="Delete post"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {/* Actions - Only visible to Admins */}
+                  {isAdmin && (
+                    <div className="flex items-center space-x-2 self-end sm:self-center">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteModal({ isOpen: true, postId: post.id })}
+                        className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100 cursor-pointer"
+                        title="Delete post (Admin Only)"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
