@@ -44,8 +44,8 @@
     },
     "reddit": {
       "name": "Reddit",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "threads": {
       "name": "Threads",
@@ -72,8 +72,16 @@
       "status": "active",
       "enabled": true
     },
-    "_branding": {}
+    "_branding": {
+      "logoUrl": "/logo.png",
+      "iconUrl": "/logo-icon.png",
+      "updatedAt": "2026-11-04T06:56:18.457Z"
+    }
   },
   "supabase": {},
-  "branding": {}
+  "branding": {
+    "logoUrl": "/logo.png",
+    "iconUrl": "/logo-icon.png",
+    "updatedAt": "2026-11-04T06:56:18.457Z"
+  }
 }
