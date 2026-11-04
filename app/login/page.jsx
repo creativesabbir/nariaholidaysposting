@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, ShieldAlert, RefreshCw } from 'lucide-react';
 import { loginUser } from '@/lib/api';
@@ -15,6 +15,26 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [logoUrl, setLogoUrl] = useState('/logo.png');
+
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('nh_brand_logo');
+      if (cached) setLogoUrl(cached);
+    } catch (e) {}
+
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.settings?.branding?.logoUrl) {
+          setLogoUrl(data.settings.branding.logoUrl);
+          try {
+            localStorage.setItem('nh_brand_logo', data.settings.branding.logoUrl);
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleFormLogin = async (e) => {
     e.preventDefault();
@@ -65,9 +85,10 @@ function LoginForm() {
         {/* Logo */}
         <div className="flex justify-center">
           <img
-            src="/logo.png"
+            src={logoUrl || '/logo.png'}
             alt="Naria Holidays"
-            className="h-14 w-auto object-contain"
+            className="h-14 w-auto object-contain max-w-[260px]"
+            onError={() => setLogoUrl('/logo.png')}
           />
         </div>
 

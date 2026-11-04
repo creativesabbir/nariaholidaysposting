@@ -29,6 +29,32 @@ export default function LivePreview({
   const [platform, setPlatform] = useState('fb'); // 'fb' or 'ig'
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [brandIcon, setBrandIcon] = useState('/logo-icon.png');
+
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('nh_brand_icon');
+      if (cached) setBrandIcon(cached);
+    } catch (e) {}
+
+    const loadIcon = async () => {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data?.settings?.branding?.iconUrl) {
+          setBrandIcon(data.settings.branding.iconUrl);
+          try {
+            localStorage.setItem('nh_brand_icon', data.settings.branding.iconUrl);
+          } catch (e) {}
+        }
+      } catch (e) {}
+    };
+
+    loadIcon();
+    const handleUpdate = () => loadIcon();
+    window.addEventListener('nh_brand_updated', handleUpdate);
+    return () => window.removeEventListener('nh_brand_updated', handleUpdate);
+  }, []);
 
   useEffect(() => {
     setIsExpanded(false);
@@ -405,9 +431,10 @@ export default function LivePreview({
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full bg-white border border-slate-200 p-0.5 flex items-center justify-center shadow-xs overflow-hidden">
                     <img 
-                      src="/logo-icon.png" 
+                      src={brandIcon || '/logo-icon.png'} 
                       alt="Naria Holidays" 
                       className="w-full h-full object-contain" 
+                      onError={() => setBrandIcon('/logo-icon.png')}
                     />
                   </div>
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
@@ -497,7 +524,12 @@ export default function LivePreview({
               <div className="flex items-center space-x-2.5">
                 <div className="w-9 h-9 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600">
                   <div className="w-full h-full rounded-full bg-white p-0.5 overflow-hidden flex items-center justify-center">
-                    <img src="/logo-icon.png" alt="Naria Holidays" className="w-full h-full object-contain" />
+                    <img 
+                      src={brandIcon || '/logo-icon.png'} 
+                      alt="Naria Holidays" 
+                      className="w-full h-full object-contain" 
+                      onError={() => setBrandIcon('/logo-icon.png')}
+                    />
                   </div>
                 </div>
                 <div>

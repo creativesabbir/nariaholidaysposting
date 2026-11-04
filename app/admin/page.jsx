@@ -27,7 +27,10 @@ import {
   X,
   Image as ImageIcon,
   Copy,
-  Check
+  Check,
+  Palette,
+  RotateCcw,
+  Upload
 } from 'lucide-react';
 import ImageUploadModal from '@/components/ImageUploadModal';
 import { 
@@ -180,6 +183,15 @@ export default function AdminPage() {
   const [activePayloadTab, setActivePayloadTab] = useState('image'); // 'image' | 'video' | 'scheduled'
   const [copiedPayload, setCopiedPayload] = useState(false);
 
+  // Brand & Logo Customization state
+  const [brandLogo, setBrandLogo] = useState('/logo.png');
+  const [brandIcon, setBrandIcon] = useState('/logo-icon.png');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [isSavingBranding, setIsSavingBranding] = useState(false);
+  const logoInputRef = useRef(null);
+  const iconInputRef = useRef(null);
+
   const handleCopyPayload = (text) => {
     try {
       navigator.clipboard.writeText(text);
@@ -218,6 +230,12 @@ export default function AdminPage() {
       }
       if (sets?.settings) {
         setSettings(sets.settings);
+        if (sets.settings.branding?.logoUrl) {
+          setBrandLogo(sets.settings.branding.logoUrl);
+        }
+        if (sets.settings.branding?.iconUrl) {
+          setBrandIcon(sets.settings.branding.iconUrl);
+        }
       }
     } catch (err) {
       console.error('Failed to load admin data:', err);
@@ -436,6 +454,97 @@ export default function AdminPage() {
     return p.defaultEnabled;
   }).length;
 
+  // Brand & Logo Customization Handlers
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingLogo(true);
+      const res = await uploadMediaFile(file);
+      if (res?.url) {
+        setBrandLogo(res.url);
+      }
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Could not upload the new logo. Please try again.'
+      });
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
+  const handleIconUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingIcon(true);
+      const res = await uploadMediaFile(file);
+      if (res?.url) {
+        setBrandIcon(res.url);
+      }
+    } catch (err) {
+      console.error('Icon upload error:', err);
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Could not upload the square icon. Please try again.'
+      });
+    } finally {
+      setIsUploadingIcon(false);
+      if (iconInputRef.current) iconInputRef.current.value = '';
+    }
+  };
+
+  const handleSaveBranding = async () => {
+    try {
+      setIsSavingBranding(true);
+      const updatedBranding = {
+        logoUrl: brandLogo || '/logo.png',
+        iconUrl: brandIcon || '/logo-icon.png',
+        updatedAt: new Date().toISOString()
+      };
+
+      const res = await updateSettings({
+        ...settings,
+        branding: updatedBranding
+      });
+
+      if (res?.success) {
+        setSettings(prev => ({ ...prev, branding: updatedBranding }));
+        try {
+          localStorage.setItem('nh_brand_logo', updatedBranding.logoUrl);
+          localStorage.setItem('nh_brand_icon', updatedBranding.iconUrl);
+        } catch (e) {}
+        window.dispatchEvent(new Event('nh_brand_updated'));
+
+        setAlertConfig({
+          isOpen: true,
+          type: 'success',
+          title: 'Brand Updated!',
+          message: 'Website logo and branding assets have been updated successfully across the entire app.'
+        });
+      } else {
+        throw new Error(res?.error || 'Failed to save brand settings');
+      }
+    } catch (err) {
+      console.error('Save branding error:', err);
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not update branding. Please try again.'
+      });
+    } finally {
+      setIsSavingBranding(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* DEDICATED STANDALONE ADMIN HEADER */}
@@ -444,11 +553,14 @@ export default function AdminPage() {
           <div className="flex items-center justify-between h-20">
             {/* Admin Brand / Title */}
             <div className="flex items-center space-x-4">
-              <img
-                src="/logo.png"
-                alt="Naria Holidays"
-                className="h-10 sm:h-11 w-auto object-contain"
-              />
+              <Link href="/" className="hover:opacity-95 transition-opacity">
+                <img
+                  src={brandLogo || '/logo.png'}
+                  alt="Naria Holidays"
+                  className="h-10 sm:h-11 w-auto object-contain max-w-[200px]"
+                  onError={() => setBrandLogo('/logo.png')}
+                />
+              </Link>
               <div className="h-6 w-px bg-slate-200" />
               <div className="flex items-center space-x-2">
                 <span className="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center space-x-1.5 shadow-2xs">
@@ -569,6 +681,18 @@ export default function AdminPage() {
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
               13 channels
             </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('branding')}
+            className={`flex items-center space-x-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all border-b-2 ${
+              activeTab === 'branding'
+                ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-white/60'
+            }`}
+          >
+            <Palette className="w-4 h-4" />
+            <span>Brand & Logo</span>
           </button>
         </div>
 
@@ -1150,6 +1274,272 @@ export default function AdminPage() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* 4. BRAND & LOGO CUSTOMIZATION TAB */}
+        {activeTab === 'branding' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-200 gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                  <Palette className="w-4 h-4 text-blue-600" />
+                  <span>Agency Brand & Logo Customization</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload your company logo and icon. Updates take effect immediately across Navbar, Login screen, and Live Feeds.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveBranding}
+                disabled={isSavingBranding}
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer self-start sm:self-auto"
+              >
+                {isSavingBranding ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Save Brand Settings</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Grid for Logo & Icon Customization */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 1. Main Horizontal Header Logo */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">Main Website Logo</h4>
+                      <p className="text-[11px] text-slate-400">Displayed in Navbar, Admin Header & Login screen</p>
+                    </div>
+                  </div>
+                  {brandLogo !== '/logo.png' && (
+                    <button
+                      type="button"
+                      onClick={() => setBrandLogo('/logo.png')}
+                      className="inline-flex items-center space-x-1 text-[11px] text-slate-500 hover:text-rose-600 font-semibold cursor-pointer"
+                      title="Reset to default brand logo"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reset</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Logo Preview Container */}
+                <div className="h-32 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-4 flex items-center justify-center relative overflow-hidden group">
+                  <img
+                    src={brandLogo || '/logo.png'}
+                    alt="Main Brand Logo"
+                    className="max-h-20 w-auto object-contain transition-transform group-hover:scale-105"
+                    onError={() => setBrandLogo('/logo.png')}
+                  />
+                  <span className="absolute bottom-2 right-2 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-white/90 border border-slate-200 text-slate-500 shadow-2xs">
+                    Live Preview
+                  </span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    ref={logoInputRef}
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={isUploadingLogo}
+                      className="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                      {isUploadingLogo ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading & hosting to ImgBB...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload New Logo</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* URL Input */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      Or direct logo image URL:
+                    </label>
+                    <input
+                      type="url"
+                      value={brandLogo}
+                      onChange={(e) => setBrandLogo(e.target.value)}
+                      placeholder="https://.../logo.png"
+                      className="w-full px-3.5 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 shadow-2xs font-mono"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    💡 <strong>Tip:</strong> Transparent PNG or WebP format with horizontal ratio (e.g. 300x80px) works best.
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Square Brand Icon (Avatars, Favicon, Feeds) */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">Square App Icon / Avatar</h4>
+                      <p className="text-[11px] text-slate-400">Used for Social Feed mockups, profile avatars & favicon</p>
+                    </div>
+                  </div>
+                  {brandIcon !== '/logo-icon.png' && (
+                    <button
+                      type="button"
+                      onClick={() => setBrandIcon('/logo-icon.png')}
+                      className="inline-flex items-center space-x-1 text-[11px] text-slate-500 hover:text-rose-600 font-semibold cursor-pointer"
+                      title="Reset to default icon"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reset</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Square Icon Preview */}
+                <div className="h-32 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-4 flex items-center justify-center space-x-6 relative">
+                  {/* Square Box Preview */}
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 p-2 shadow-xs flex items-center justify-center overflow-hidden">
+                      <img
+                        src={brandIcon || '/logo-icon.png'}
+                        alt="Square Icon"
+                        className="w-full h-full object-contain"
+                        onError={() => setBrandIcon('/logo-icon.png')}
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium">Rounded</span>
+                  </div>
+
+                  {/* Circular Avatar Preview */}
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="w-16 h-16 rounded-full bg-white border border-slate-200 p-2 shadow-xs flex items-center justify-center overflow-hidden ring-2 ring-blue-100">
+                      <img
+                        src={brandIcon || '/logo-icon.png'}
+                        alt="Circular Avatar"
+                        className="w-full h-full object-contain"
+                        onError={() => setBrandIcon('/logo-icon.png')}
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium">Feed Avatar</span>
+                  </div>
+
+                  <span className="absolute bottom-2 right-2 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-white/90 border border-slate-200 text-slate-500 shadow-2xs">
+                    Preview
+                  </span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    ref={iconInputRef}
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleIconUpload}
+                    className="hidden"
+                  />
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => iconInputRef.current?.click()}
+                      disabled={isUploadingIcon}
+                      className="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                      {isUploadingIcon ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading & hosting to ImgBB...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload Square Icon</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* URL Input */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      Or direct icon image URL:
+                    </label>
+                    <input
+                      type="url"
+                      value={brandIcon}
+                      onChange={(e) => setBrandIcon(e.target.value)}
+                      placeholder="https://.../logo-icon.png"
+                      className="w-full px-3.5 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 shadow-2xs font-mono"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    💡 <strong>Tip:</strong> 1:1 aspect ratio (e.g. 512x512px) with transparent or solid background.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Navigation Simulation */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center space-x-2">
+                <span>Navbar Live Simulation</span>
+                <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Realtime Preview
+                </span>
+              </h4>
+              <p className="text-xs text-slate-500">
+                This is exactly how your website navigation header looks right now with this logo:
+              </p>
+
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 flex items-center justify-between">
+                <img
+                  src={brandLogo || '/logo.png'}
+                  alt="Simulated Logo"
+                  className="h-10 sm:h-12 w-auto object-contain max-w-[200px]"
+                  onError={() => setBrandLogo('/logo.png')}
+                />
+                <div className="flex items-center space-x-2">
+                  <span className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-bold text-xs border border-blue-200">
+                    + Create Post
+                  </span>
+                  <span className="px-3 py-1.5 rounded-xl bg-white text-slate-600 font-bold text-xs border border-slate-200">
+                    History
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}

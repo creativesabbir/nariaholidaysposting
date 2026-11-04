@@ -1,12 +1,40 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, PlusCircle, History } from 'lucide-react';
+import { fetchSettings } from '@/lib/api';
 
 export default function Navbar({ currentUser, isLoadingUser, onOpenUserModal }) {
   const pathname = usePathname();
+  const [logoUrl, setLogoUrl] = useState('/logo.png');
+
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('nh_brand_logo');
+      if (cached) setLogoUrl(cached);
+    } catch (e) {}
+
+    const loadLogo = async () => {
+      try {
+        const res = await fetchSettings();
+        const url = res?.settings?.branding?.logoUrl;
+        if (url) {
+          setLogoUrl(url);
+          try {
+            localStorage.setItem('nh_brand_logo', url);
+          } catch (e) {}
+        }
+      } catch (e) {}
+    };
+
+    loadLogo();
+
+    const handleUpdate = () => loadLogo();
+    window.addEventListener('nh_brand_updated', handleUpdate);
+    return () => window.removeEventListener('nh_brand_updated', handleUpdate);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm transition-all">
@@ -16,9 +44,10 @@ export default function Navbar({ currentUser, isLoadingUser, onOpenUserModal }) 
           <div className="flex items-center space-x-6">
             <Link href="/" className="flex items-center hover:opacity-95 transition-opacity">
               <img
-                src="/logo.png"
+                src={logoUrl || '/logo.png'}
                 alt="Naria Holidays - Have a Nice Journey"
-                className="h-11 sm:h-12 w-auto object-contain"
+                className="h-11 sm:h-12 w-auto object-contain max-w-[220px]"
+                onError={() => setLogoUrl('/logo.png')}
               />
             </Link>
           </div>

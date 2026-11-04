@@ -29,13 +29,20 @@ export async function GET() {
           .maybeSingle();
 
         if (!sbErr && dbSets) {
+          const platforms = dbSets.platforms || {};
+          const branding = platforms._branding || {
+            logoUrl: '/logo.png',
+            iconUrl: '/logo-icon.png'
+          };
+
           finalSettings = {
             n8n: {
               webhookUrl: dbSets.n8n_webhook_url || '',
               secretToken: dbSets.n8n_secret_token || '',
               autoDispatch: dbSets.n8n_auto_dispatch !== false
             },
-            platforms: dbSets.platforms || {}
+            platforms: dbSets.platforms || {},
+            branding
           };
         }
       } catch (e) {
@@ -53,8 +60,18 @@ export async function GET() {
           lastTestedAt: null,
           lastStatus: 'ready'
         },
-        platforms: {}
+        platforms: {},
+        branding: {
+          logoUrl: '/logo.png',
+          iconUrl: '/logo-icon.png'
+        }
       });
+      if (!finalSettings.branding) {
+        finalSettings.branding = {
+          logoUrl: '/logo.png',
+          iconUrl: '/logo-icon.png'
+        };
+      }
     }
 
     serverSettingsCache = finalSettings;
@@ -85,7 +102,15 @@ export async function POST(request) {
       },
       platforms: {
         ...current.platforms,
-        ...(body.platforms || {})
+        ...(body.platforms || {}),
+        _branding: {
+          ...(current.platforms?._branding || {}),
+          ...(body.branding || current.branding || {})
+        }
+      },
+      branding: {
+        ...(current.branding || current.platforms?._branding || {}),
+        ...(body.branding || {})
       }
     };
 

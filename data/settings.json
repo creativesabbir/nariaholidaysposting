@@ -9,13 +9,13 @@
   "platforms": {
     "tiktok": {
       "name": "TikTok",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "instagram": {
       "name": "Instagram",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "linkedin": {
       "name": "LinkedIn",
@@ -24,8 +24,8 @@
     },
     "youtube": {
       "name": "YouTube",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "facebook": {
       "name": "Facebook",
@@ -34,8 +34,8 @@
     },
     "x": {
       "name": "X / Twitter",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "pinterest": {
       "name": "Pinterest",
@@ -49,29 +49,31 @@
     },
     "threads": {
       "name": "Threads",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "bluesky": {
       "name": "Bluesky",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "discord": {
       "name": "Discord",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "telegram": {
       "name": "Telegram",
-      "enabled": false,
-      "status": "inactive"
+      "status": "inactive",
+      "enabled": false
     },
     "google_business": {
       "name": "Google Business",
       "status": "active",
       "enabled": true
-    }
+    },
+    "_branding": {}
   },
-  "supabase": {}
+  "supabase": {},
+  "branding": {}
 }
