@@ -21,8 +21,20 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const postId = body.postId || body.id || body.post_id;
-    const newStatus = (body.status || 'published').toLowerCase().trim();
+    let rawPostId = body.postId || body.id || body.post_id || body.body?.postId || body.data?.postId;
+    if (typeof rawPostId === 'string') {
+      rawPostId = rawPostId.trim();
+      if (rawPostId.startsWith('=')) {
+        rawPostId = rawPostId.substring(1).trim();
+      }
+    }
+    const postId = rawPostId;
+
+    let rawStatus = (body.status || body.body?.status || 'published').toString().toLowerCase().trim();
+    if (rawStatus.startsWith('=')) {
+      rawStatus = rawStatus.substring(1).trim();
+    }
+    const newStatus = rawStatus;
 
     if (!postId) {
       return NextResponse.json({ 
@@ -83,3 +95,4 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Failed to update post status' }, { status: 500 });
   }
 }
+
