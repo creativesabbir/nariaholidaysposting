@@ -19,7 +19,7 @@ export async function GET(request) {
     const author = searchParams.get('author');
 
     const now = Date.now();
-    if (!type && !author && serverPostsCache && (now - serverPostsCacheTime < 20000)) {
+    if (!type && !author && serverPostsCache && (now - serverPostsCacheTime < 2000)) {
       return NextResponse.json(serverPostsCache);
     }
 

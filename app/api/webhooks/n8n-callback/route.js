@@ -54,13 +54,14 @@ export async function POST(request) {
           .from('posts')
           .update({
             status: finalStatus,
-            updated_at: new Date().toISOString(),
             n8n_dispatched: true
           })
           .eq('id', postId)
           .select();
 
-        if (!error && data && data.length > 0) {
+        if (error) {
+          console.error('Supabase status callback update error:', error.message);
+        } else if (data && data.length > 0) {
           updated = true;
         }
       } catch (sbErr) {

@@ -1,6 +1,6 @@
 {
   "n8n": {
-    "webhookUrl": "https://abirhasanauto12.app.n8n.cloud/webhook/nh-posting-agent",
+    "webhookUrl": "https://abirhasanauto13.app.n8n.cloud/webhook/nh-posting-agent",
     "secretToken": "",
     "autoDispatch": true,
     "lastTestedAt": "2026-11-04T04:39:35.058Z",
@@ -9,13 +9,13 @@
   "platforms": {
     "tiktok": {
       "name": "TikTok",
-      "status": "active",
-      "enabled": true
+      "enabled": false,
+      "status": "inactive"
     },
     "instagram": {
       "name": "Instagram",
-      "enabled": true,
-      "status": "active"
+      "enabled": false,
+      "status": "inactive"
     },
     "linkedin": {
       "name": "LinkedIn",
@@ -24,8 +24,8 @@
     },
     "youtube": {
       "name": "YouTube",
-      "status": "active",
-      "enabled": true
+      "enabled": false,
+      "status": "inactive"
     },
     "facebook": {
       "name": "Facebook",
@@ -34,8 +34,8 @@
     },
     "x": {
       "name": "X / Twitter",
-      "enabled": true,
-      "status": "active"
+      "enabled": false,
+      "status": "inactive"
     },
     "pinterest": {
       "name": "Pinterest",
@@ -44,28 +44,28 @@
     },
     "reddit": {
       "name": "Reddit",
-      "enabled": true,
-      "status": "active"
+      "enabled": false,
+      "status": "inactive"
     },
     "threads": {
       "name": "Threads",
-      "status": "active",
-      "enabled": true
+      "enabled": false,
+      "status": "inactive"
     },
     "bluesky": {
       "name": "Bluesky",
-      "status": "active",
-      "enabled": true
+      "enabled": false,
+      "status": "inactive"
     },
     "discord": {
       "name": "Discord",
-      "status": "active",
-      "enabled": true
+      "enabled": false,
+      "status": "inactive"
     },
     "telegram": {
       "name": "Telegram",
-      "status": "active",
-      "enabled": true
+      "enabled": false,
+      "status": "inactive"
     },
     "google_business": {
       "name": "Google Business",
