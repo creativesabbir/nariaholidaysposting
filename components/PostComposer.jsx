@@ -36,6 +36,7 @@ import FeedbackModal from './FeedbackModal';
 import CalendarModal from './CalendarModal';
 import TimePickerModal from './TimePickerModal';
 import { createPost, uploadMediaFile, fetchSettings } from '@/lib/api';
+import { compressImageIfNeeded } from '@/lib/imageOptimizer';
 
 // Exact 13 platforms matching user's reference image
 const SOCIAL_ACCOUNTS = [
@@ -195,9 +196,26 @@ export default function PostComposer({
         return;
       }
 
-      const totalBytes = files.reduce((acc, f) => acc + f.size, 0);
-      const totalMbStr = (totalBytes / (1024 * 1024)).toFixed(1);
+      const hasLargeFiles = files.some(f => f.size > 2.5 * 1024 * 1024 && f.type !== 'image/gif');
       const localPreviewUrl = URL.createObjectURL(files[0]);
+
+      if (hasLargeFiles) {
+        setImageUploadState({
+          isUploading: true,
+          progress: 5,
+          loadedMB: '0.0 MB',
+          totalMB: `${(files.reduce((a, b) => a + b.size, 0) / (1024 * 1024)).toFixed(1)} MB`,
+          phase: 'compressing',
+          fileName: files.length === 1 ? files[0].name : `${files.length} Photos`,
+          previewBlobUrl: localPreviewUrl
+        });
+      }
+
+      // Automatically compress any large photos before uploading
+      const optimizedFiles = await Promise.all(files.map(f => compressImageIfNeeded(f)));
+
+      const totalBytes = optimizedFiles.reduce((acc, f) => acc + f.size, 0);
+      const totalMbStr = (totalBytes / (1024 * 1024)).toFixed(1);
 
       setImageUploadState({
         isUploading: true,
@@ -205,15 +223,15 @@ export default function PostComposer({
         loadedMB: '0.1 MB',
         totalMB: `${totalMbStr} MB`,
         phase: 'uploading',
-        fileName: files.length === 1 ? files[0].name : `${files.length} Photos`,
+        fileName: optimizedFiles.length === 1 ? optimizedFiles[0].name : `${optimizedFiles.length} Photos`,
         previewBlobUrl: localPreviewUrl
       });
 
       try {
         setIsUploading(true);
-        const loadedMap = new Array(files.length).fill(0);
+        const loadedMap = new Array(optimizedFiles.length).fill(0);
 
-        const uploadPromises = files.map((file, idx) => {
+        const uploadPromises = optimizedFiles.map((file, idx) => {
           return uploadMediaFile(file, ({ loaded }) => {
             loadedMap[idx] = loaded;
             const sumLoaded = loadedMap.reduce((a, b) => a + b, 0);
@@ -682,10 +700,15 @@ export default function PostComposer({
                           {imageUploadState.fileName || 'Uploading Photos'}
                         </p>
                         <p className="text-xs text-slate-500 font-medium mt-0.5">
-                          {imageUploadState.phase === 'processing' ? (
+                          {imageUploadState.phase === 'compressing' ? (
+                            <span className="text-amber-600 font-semibold flex items-center space-x-1.5">
+                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping inline-block" />
+                              <span>Compressing & optimizing photo...</span>
+                            </span>
+                          ) : imageUploadState.phase === 'processing' ? (
                             <span className="text-blue-600 font-semibold flex items-center space-x-1.5">
                               <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping inline-block" />
-                              <span>Processing & optimizing photos...</span>
+                              <span>Processing & saving to ImgBB cloud...</span>
                             </span>
                           ) : (
                             <span>
@@ -711,7 +734,9 @@ export default function PostComposer({
                     </div>
 
                     <p className="text-[11px] text-slate-400">
-                      {imageUploadState.phase === 'processing' 
+                      {imageUploadState.phase === 'compressing'
+                        ? 'High-res photo is automatically optimized for fast upload...'
+                        : imageUploadState.phase === 'processing' 
                         ? 'Finishing up cloud processing...' 
                         : 'Please keep this window open while uploading'}
                     </p>
