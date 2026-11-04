@@ -32,15 +32,14 @@ function AppContent({ children }) {
       </div>
 
       {/* Shared Persistent Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 space-y-1">
-        <p>&copy; {new Date().getFullYear()} Naria Holidays. Have a nice journey.</p>
-        <p className="text-[11px] text-slate-400">
+      <footer className="border-t border-slate-200 bg-white py-5 text-center text-xs text-slate-400">
+        <p>
           Powered by -{' '}
           <a
             href="https://goaivisibility.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-slate-600 hover:text-blue-600 transition-colors underline decoration-slate-300 underline-offset-2 hover:decoration-blue-500"
+            className="font-semibold text-slate-600 hover:text-blue-600 transition-colors no-underline"
           >
             goAI Visibility Agency
           </a>

@@ -192,7 +192,7 @@ function LoginForm() {
             href="https://goaivisibility.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-slate-500 hover:text-blue-600 transition-colors underline decoration-slate-300 underline-offset-2 hover:decoration-blue-500"
+            className="font-semibold text-slate-600 hover:text-blue-600 transition-colors no-underline"
           >
             goAI Visibility Agency
           </a>
