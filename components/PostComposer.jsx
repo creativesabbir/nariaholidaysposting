@@ -453,7 +453,11 @@ export default function PostComposer({
     if (platformId === 'youtube' && activeTab === 'image') {
       return { isOff: true, badge: 'Unavailable' };
     }
-    // 3. Google Business is disabled when multiple images are selected (supports single photo only)
+    // 3. Pinterest is disabled when multiple images are uploaded (supports single image per pin only)
+    if (platformId === 'pinterest' && activeTab === 'image' && mediaUrls && mediaUrls.length > 1) {
+      return { isOff: true, badge: 'Unavailable' };
+    }
+    // 4. Google Business is disabled when multiple images are selected (supports single photo only)
     if (platformId === 'google_business' && activeTab === 'image' && mediaUrls && mediaUrls.length > 1) {
       return { isOff: true, badge: 'Disabled' };
     }
@@ -467,8 +471,13 @@ export default function PostComposer({
       if (activeTab === 'image' && updated.includes('youtube')) {
         updated = updated.filter(id => id !== 'youtube');
       }
-      if (activeTab === 'image' && mediaUrls && mediaUrls.length > 1 && updated.includes('google_business')) {
-        updated = updated.filter(id => id !== 'google_business');
+      if (activeTab === 'image' && mediaUrls && mediaUrls.length > 1) {
+        if (updated.includes('pinterest')) {
+          updated = updated.filter(id => id !== 'pinterest');
+        }
+        if (updated.includes('google_business')) {
+          updated = updated.filter(id => id !== 'google_business');
+        }
       }
       return updated;
     });
@@ -1084,6 +1093,8 @@ export default function PostComposer({
                     title={
                       acc.id === 'youtube' && activeTab === 'image'
                         ? 'YouTube is not available for image posts (video only)'
+                        : acc.id === 'pinterest' && mediaUrls && mediaUrls.length > 1
+                        ? 'Pinterest supports single image per pin only'
                         : acc.id === 'google_business' && mediaUrls && mediaUrls.length > 1
                         ? 'Google Business profile supports single image only'
                         : `${acc.name} is unavailable`
