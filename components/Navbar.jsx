@@ -74,6 +74,10 @@ export default function Navbar({ currentUser, isLoadingUser, onOpenUserModal }) 
                   <img
                     src={currentUser?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80"}
                     alt={currentUser?.name || "User"}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80";
+                    }}
                     className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
                   />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />

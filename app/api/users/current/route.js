@@ -36,18 +36,26 @@ export async function GET(request) {
           .maybeSingle();
 
         if (dbUser) {
+          const avatarUrl = dbUser.avatar?.startsWith('/uploads/') 
+            ? 'https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg' 
+            : dbUser.avatar;
+
           return NextResponse.json({
             id: dbUser.id,
             name: dbUser.name,
             email: dbUser.email,
             role: dbUser.role,
-            avatar: dbUser.avatar,
+            avatar: avatarUrl,
             isAdmin: Boolean(dbUser.is_admin)
           });
         }
       } catch (sbErr) {
         console.warn('Supabase profile fetch error:', sbErr.message);
       }
+    }
+
+    if (sessionUser && sessionUser.avatar?.startsWith('/uploads/')) {
+      sessionUser.avatar = 'https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg';
     }
 
     // Return the session user exactly as logged in

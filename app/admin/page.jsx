@@ -390,6 +390,10 @@ export default function AdminPage() {
                 <img
                   src={currentUser?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80"}
                   alt="Admin"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80";
+                  }}
                   className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-500/20"
                 />
                 <div className="hidden sm:block text-left text-xs">
@@ -530,8 +534,12 @@ export default function AdminPage() {
                       <div className="flex items-center space-x-3.5">
                         <div className="relative">
                           <img
-                            src={u.avatar}
+                            src={u.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80"}
                             alt={u.name}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80";
+                            }}
                             className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-100"
                           />
                           {isCurrent && (

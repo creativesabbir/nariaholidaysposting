@@ -3,7 +3,7 @@
     "webhookUrl": "https://abirhasanauto12.app.n8n.cloud/webhook/nh-posting-agent",
     "secretToken": "",
     "autoDispatch": true,
-    "lastTestedAt": "2026-11-03T11:48:12.062Z",
+    "lastTestedAt": "2026-11-04T04:39:35.058Z",
     "lastStatus": "success"
   },
   "platforms": {

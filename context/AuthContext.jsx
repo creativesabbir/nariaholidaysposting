@@ -54,6 +54,9 @@ export function AuthProvider({ children }) {
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed && parsed.id) {
+          if (parsed.avatar && parsed.avatar.startsWith('/uploads/')) {
+            parsed.avatar = 'https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg';
+          }
           setCurrentUser(parsed);
           setIsLoadingUser(false);
         }
