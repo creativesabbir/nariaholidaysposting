@@ -92,6 +92,17 @@ export default function PostComposer({
     previewBlobUrl: null
   });
 
+  // Dedicated Image Upload & Processing System states
+  const [imageUploadState, setImageUploadState] = useState({
+    isUploading: false,
+    progress: 0,
+    loadedMB: '0.0 MB',
+    totalMB: '0.0 MB',
+    phase: 'idle',
+    fileName: '',
+    previewBlobUrl: null
+  });
+
   useEffect(() => {
     fetchSettings().then(data => {
       if (data?.settings?.platforms) {
@@ -182,9 +193,39 @@ export default function PostComposer({
         return;
       }
 
+      const totalBytes = files.reduce((acc, f) => acc + f.size, 0);
+      const totalMbStr = (totalBytes / (1024 * 1024)).toFixed(1);
+      const localPreviewUrl = URL.createObjectURL(files[0]);
+
+      setImageUploadState({
+        isUploading: true,
+        progress: 8,
+        loadedMB: '0.1 MB',
+        totalMB: `${totalMbStr} MB`,
+        phase: 'uploading',
+        fileName: files.length === 1 ? files[0].name : `${files.length} Photos`,
+        previewBlobUrl: localPreviewUrl
+      });
+
       try {
         setIsUploading(true);
-        const uploadPromises = files.map(file => uploadMediaFile(file));
+        const loadedMap = new Array(files.length).fill(0);
+
+        const uploadPromises = files.map((file, idx) => {
+          return uploadMediaFile(file, ({ loaded }) => {
+            loadedMap[idx] = loaded;
+            const sumLoaded = loadedMap.reduce((a, b) => a + b, 0);
+            const percent = Math.min(Math.round((sumLoaded / totalBytes) * 100), 98);
+            const loadedMbStr = (sumLoaded / (1024 * 1024)).toFixed(1);
+            setImageUploadState(prev => ({
+              ...prev,
+              progress: Math.max(percent, 8),
+              loadedMB: `${loadedMbStr} MB`,
+              phase: percent >= 95 ? 'processing' : 'uploading'
+            }));
+          });
+        });
+
         const results = await Promise.all(uploadPromises);
         const validUrls = results.map(r => r?.url).filter(Boolean);
 
@@ -195,12 +236,23 @@ export default function PostComposer({
           setMediaUrl(updatedList[0]);
           setMediaFile({
             name: `${updatedList.length} photo${updatedList.length > 1 ? 's' : ''}`,
-            size: `${(files.reduce((a, b) => a + b.size, 0) / (1024 * 1024)).toFixed(2)} MB`,
+            size: `${totalMbStr} MB`,
             type: 'image'
           });
+          setImageUploadState(prev => ({
+            ...prev,
+            isUploading: false,
+            progress: 100,
+            phase: 'ready'
+          }));
         }
       } catch (err) {
-        console.error(err);
+        console.error('Image upload error:', err);
+        setImageUploadState(prev => ({
+          ...prev,
+          isUploading: false,
+          phase: 'error'
+        }));
         setModalConfig({
           isOpen: true,
           type: 'error',
@@ -311,6 +363,18 @@ export default function PostComposer({
       try { URL.revokeObjectURL(videoUploadState.previewBlobUrl); } catch (e) {}
     }
     setVideoUploadState({
+      isUploading: false,
+      progress: 0,
+      loadedMB: '0.0 MB',
+      totalMB: '0.0 MB',
+      phase: 'idle',
+      fileName: '',
+      previewBlobUrl: null
+    });
+    if (imageUploadState.previewBlobUrl) {
+      try { URL.revokeObjectURL(imageUploadState.previewBlobUrl); } catch (e) {}
+    }
+    setImageUploadState({
       isUploading: false,
       progress: 0,
       loadedMB: '0.0 MB',
@@ -553,7 +617,71 @@ export default function PostComposer({
           </div>
 
           {activeTab === 'image' ? (
-            mediaUrls && mediaUrls.length > 0 ? (
+            imageUploadState.isUploading ? (
+              /* CLEAN NORMAL USER-FRIENDLY IMAGE UPLOAD SYSTEM */
+              <div className="border border-blue-200 bg-blue-50/30 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 animate-in fade-in duration-200">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                  {/* Local Thumbnail Preview */}
+                  <div className="relative w-full sm:w-24 h-24 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center">
+                    {imageUploadState.previewBlobUrl ? (
+                      <img 
+                        src={imageUploadState.previewBlobUrl} 
+                        alt="Uploading preview"
+                        className="w-full h-full object-cover opacity-80"
+                      />
+                    ) : (
+                      <ImageIcon className="w-8 h-8 text-blue-400" />
+                    )}
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      <RefreshCw className="w-6 h-6 text-white animate-spin drop-shadow-md" />
+                    </div>
+                  </div>
+
+                  {/* Progress Tracking Details */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="truncate pr-2">
+                        <p className="text-xs sm:text-sm font-semibold text-slate-900 truncate">
+                          {imageUploadState.fileName || 'Uploading Photos'}
+                        </p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          {imageUploadState.phase === 'processing' ? (
+                            <span className="text-blue-600 font-semibold flex items-center space-x-1.5">
+                              <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping inline-block" />
+                              <span>Processing & optimizing photos...</span>
+                            </span>
+                          ) : (
+                            <span>
+                              Uploading: <strong className="text-slate-700 font-semibold">{imageUploadState.loadedMB}</strong> of {imageUploadState.totalMB}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="flex-shrink-0 text-right">
+                        <span className="text-xs font-bold text-blue-600 bg-white px-2.5 py-1 rounded-full border border-blue-200 shadow-2xs">
+                          {imageUploadState.progress}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Clean Progress Bar */}
+                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden p-0.5">
+                      <div 
+                        className="bg-blue-600 h-1.5 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${Math.max(imageUploadState.progress, 5)}%` }}
+                      />
+                    </div>
+
+                    <p className="text-[11px] text-slate-400">
+                      {imageUploadState.phase === 'processing' 
+                        ? 'Finishing up cloud processing...' 
+                        : 'Please keep this window open while uploading'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : mediaUrls && mediaUrls.length > 0 ? (
               <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">

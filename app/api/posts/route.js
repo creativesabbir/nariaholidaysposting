@@ -158,25 +158,34 @@ export async function POST(request) {
     posts.unshift(newPost);
     writeJSON('posts.json', posts);
 
-    // 3. Trigger n8n Automation Webhook
+    // 3. Trigger n8n Automation Webhook (Awaited to ensure serverless execution completes)
     try {
       let n8nUrl = null;
       let secretToken = null;
       let autoDispatch = true;
 
       if (isSupabaseConfigured && supabaseAdmin) {
-        const { data: dbSettings } = await supabaseAdmin.from('settings').select('*').eq('id', 'app_settings').maybeSingle();
-        if (dbSettings) {
-          n8nUrl = dbSettings.n8n_webhook_url;
-          secretToken = dbSettings.n8n_secret_token;
-          autoDispatch = dbSettings.n8n_auto_dispatch !== false;
+        try {
+          const { data: dbSettings } = await supabaseAdmin.from('settings').select('*').eq('id', 'app_settings').maybeSingle();
+          if (dbSettings) {
+            n8nUrl = dbSettings.n8n_webhook_url;
+            secretToken = dbSettings.n8n_secret_token;
+            autoDispatch = dbSettings.n8n_auto_dispatch !== false;
+          }
+        } catch (sbSettingsErr) {
+          console.warn('Supabase settings fetch fallback:', sbSettingsErr.message);
         }
+      }
+
+      if (!n8nUrl) {
+        n8nUrl = process.env.N8N_WEBHOOK_URL;
+        secretToken = secretToken || process.env.N8N_WEBHOOK_SECRET;
       }
 
       if (!n8nUrl) {
         const localSettings = readJSON('settings.json', {});
         n8nUrl = localSettings.n8n?.webhookUrl;
-        secretToken = localSettings.n8n?.secretToken;
+        secretToken = secretToken || localSettings.n8n?.secretToken;
         autoDispatch = localSettings.n8n?.autoDispatch !== false;
       }
 
@@ -188,7 +197,11 @@ export async function POST(request) {
           platforms: newPost.platforms,
           caption: newPost.caption,
           mediaUrls: newPost.mediaUrls,
+          mediaUrl: newPost.mediaUrls?.[0] || '',
+          type: newPost.type,
           author: newPost.postedBy,
+          publishedBy: newPost.postedBy?.name || 'Abir Hasan Sabbir',
+          publishedByEmail: newPost.postedBy?.email || '',
           scheduledAt: newPost.scheduledAt,
           timestamp: new Date().toISOString()
         };
@@ -196,18 +209,33 @@ export async function POST(request) {
         const headers = { 'Content-Type': 'application/json' };
         if (secretToken) {
           headers['X-Webhook-Secret'] = secretToken;
+          headers['Authorization'] = `Bearer ${secretToken}`;
         }
 
-        fetch(n8nUrl, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(5000)
-        }).catch(err => {
-          console.warn('n8n dispatch warning:', err.message);
-        });
+        // AWAIT REQUIRED: Prevents Netlify / serverless runtime from abruptly freezing before dispatch completes
+        try {
+          const n8nRes = await fetch(n8nUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(10000)
+          });
+
+          if (n8nRes.ok) {
+            newPost.n8nDispatched = true;
+            if (isSupabaseConfigured && supabaseAdmin) {
+              await supabaseAdmin.from('posts').update({ n8n_dispatched: true }).eq('id', newPost.id);
+            }
+          } else {
+            console.warn('n8n dispatch non-200 status:', n8nRes.status);
+          }
+        } catch (fetchErr) {
+          console.error('n8n fetch dispatch error:', fetchErr.message);
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('n8n webhook handler exception:', e);
+    }
 
     return NextResponse.json({
       success: true,
