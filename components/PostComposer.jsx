@@ -299,6 +299,19 @@ export default function PostComposer({
       return;
     }
 
+    // Video size validation: max 200 MB (100% Free Cloud Hosting supports up to 1GB)
+    const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+    if (file.size > MAX_VIDEO_BYTES) {
+      setModalConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Video Exceeds 200 MB',
+        message: `The selected video is ${(file.size / (1024 * 1024)).toFixed(1)} MB. The maximum supported video size is 200 MB. Please trim or compress your video.`,
+        confirmText: 'Understood'
+      });
+      return;
+    }
+
     const localPreviewUrl = URL.createObjectURL(file);
     const totalMbNum = (file.size / (1024 * 1024)).toFixed(1);
 
@@ -998,7 +1011,7 @@ export default function PostComposer({
                   {isDragging ? 'Drop video here to upload' : 'Click to browse or drag & drop video clip'}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Supports vertical (9:16) & horizontal (16:9) MP4, MOV, WebM
+                  Supports MP4, MOV, WebM up to 200 MB (100% Free Hosting)
                 </p>
               </label>
             )

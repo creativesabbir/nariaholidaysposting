@@ -65,7 +65,8 @@ export async function POST(request) {
     const filename = `${Date.now()}-${uuidv4().substring(0, 8)}${ext}`;
 
     if (isVideo) {
-      // Primary: Litterbox (100% free, direct stream MP4, 72 hours retention)
+      // Primary 100% FREE Video Hosting: Litterbox (Catbox)
+      // Completely free forever, 0 Taka, up to 1GB per file, direct raw streaming MP4 for n8n
       try {
         const videoForm = new FormData();
         videoForm.append('reqtype', 'fileupload');
@@ -81,13 +82,6 @@ export async function POST(request) {
         const videoUrl = (await uploadRes.text())?.trim();
 
         if (videoUrl && videoUrl.startsWith('http')) {
-          // Keep a local copy in public/uploads for local preview / cache
-          try {
-            const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
-          } catch (localErr) {}
-
           return NextResponse.json({
             success: true,
             url: videoUrl,
@@ -95,14 +89,14 @@ export async function POST(request) {
             originalName: file.name,
             size: file.size,
             type: 'video',
-            provider: 'free-cloud'
+            provider: 'free-litterbox'
           });
         }
       } catch (litterErr) {
         console.warn('Litterbox upload notice, trying secondary fallback:', litterErr);
       }
 
-      // Secondary free fallback: tmpfiles.org
+      // Secondary 100% FREE fallback: tmpfiles.org with automated direct stream extractor
       try {
         const tmpForm = new FormData();
         const tmpBlob = new Blob([buffer], { type: file.type || 'video/mp4' });
@@ -114,8 +108,21 @@ export async function POST(request) {
         });
         const tmpJson = await tmpRes.json();
         if (tmpJson?.data?.url) {
-          // Convert view URL to direct download URL: https://tmpfiles.org/dl/...
-          const directUrl = tmpJson.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+          let directUrl = tmpJson.data.url;
+          // Extract direct stream link from tmpfiles view page so n8n never hits the download page
+          try {
+            const pageRes = await fetch(tmpJson.data.url);
+            const pageHtml = await pageRes.text();
+            const dlMatch = pageHtml.match(/href=["']([^"']*\/dl\/[^"']+)["']/i);
+            if (dlMatch && dlMatch[1]) {
+              directUrl = dlMatch[1];
+            } else {
+              directUrl = tmpJson.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+            }
+          } catch (e) {
+            directUrl = tmpJson.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+          }
+
           return NextResponse.json({
             success: true,
             url: directUrl,
@@ -123,7 +130,7 @@ export async function POST(request) {
             originalName: file.name,
             size: file.size,
             type: 'video',
-            provider: 'free-cloud'
+            provider: 'free-tmpfiles'
           });
         }
       } catch (tmpErr) {
