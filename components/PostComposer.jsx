@@ -11,9 +11,9 @@ import {
   Check, 
   Calendar, 
   Clock, 
-  Sparkles, 
   Hash, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronDown,
   Plus,
   RefreshCw,
   Film
@@ -490,7 +490,7 @@ export default function PostComposer({
     setCaption(prev => prev.trim() ? `${prev.trim()} ${tag}` : tag);
   };
 
-  // Quick Date Helpers for modern schedule picker
+  // Quick Date Helper for schedule presets
   const setQuickDate = (daysAhead) => {
     const d = new Date();
     d.setDate(d.getDate() + daysAhead);
@@ -498,10 +498,6 @@ export default function PostComposer({
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     setScheduleDate(`${yyyy}-${mm}-${dd}`);
-  };
-
-  const setQuickTime = (timeStr) => {
-    setScheduleTime(timeStr);
   };
 
   const handleSubmit = async (e) => {
@@ -1189,135 +1185,89 @@ export default function PostComposer({
             </div>
           </div>
 
-          {/* MINIMALIST & ELEGANT SCHEDULE DATE & TIME PICKER */}
+          {/* CLEAN & MINIMAL SCHEDULE DATE & TIME PICKER */}
           {isScheduled && (
-            <div className="p-4 sm:p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3.5 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center">
-                    <Calendar className="w-4 h-4" />
+            <div className="p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200/90 space-y-2.5 animate-in fade-in duration-150">
+              {/* Two Clean Input-Style Picker Triggers */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Date Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setIsCalendarOpen(true)}
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all text-left group cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider leading-none mb-1">
+                        Date
+                      </span>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors truncate block">
+                        {formatDisplayDate(scheduleDate)}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Set Date & Time</h4>
-                    <p className="text-[11px] text-slate-500">Auto-publish across selected channels</p>
+                  <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors flex-shrink-0 ml-2" />
+                </button>
+
+                {/* Time Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setIsTimePickerOpen(true)}
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all text-left group cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider leading-none mb-1">
+                        Time
+                      </span>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-800 font-mono tabular-nums group-hover:text-indigo-600 transition-colors truncate block">
+                        {formatDisplayTime(scheduleTime)}
+                      </span>
+                    </div>
                   </div>
+                  <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors flex-shrink-0 ml-2" />
+                </button>
+              </div>
+
+              {/* Minimal Quick Shortcuts + Reset */}
+              <div className="flex items-center justify-between gap-2 px-0.5 text-[11px]">
+                <div className="flex items-center flex-wrap gap-1.5">
+                  <span className="text-slate-400 font-medium mr-0.5">Quick:</span>
+                  {[
+                    { label: 'Today', days: 0 },
+                    { label: 'Tomorrow', days: 1 },
+                    { label: 'Next Week', days: 7 }
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setQuickDate(preset.days)}
+                      className="px-2 py-0.5 rounded-md font-medium text-slate-600 bg-white border border-slate-200/80 hover:border-blue-300 hover:text-blue-600 transition-colors cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
                 </div>
 
-                {scheduleDate && scheduleTime && (
+                {scheduleDate && (
                   <button
                     type="button"
                     onClick={() => {
                       setScheduleDate('');
                       setScheduleTime('19:30');
                     }}
-                    className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 hover:underline"
+                    className="text-slate-400 hover:text-rose-600 font-medium transition-colors cursor-pointer flex-shrink-0"
                   >
-                    Reset
+                    Clear
                   </button>
                 )}
               </div>
-
-              {/* Clean Two-Column Modal Trigger Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Date Picker Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsCalendarOpen(true)}
-                  className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-blue-50/50 hover:border-blue-400 transition-all text-left group shadow-2xs cursor-pointer"
-                >
-                  <div className="flex items-center space-x-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-blue-100/70 border border-blue-200 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                      <Calendar className="w-5 h-5" />
-                    </div>
-                    <div className="truncate">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Date</span>
-                      <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors truncate block">
-                        {formatDisplayDate(scheduleDate)}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-semibold text-blue-600 bg-white border border-blue-200/80 px-2.5 py-1 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all shadow-2xs flex-shrink-0 ml-2">
-                    {scheduleDate ? 'Change' : 'Pick Date'}
-                  </span>
-                </button>
-
-                {/* Time Picker Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsTimePickerOpen(true)}
-                  className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-blue-50/50 hover:border-blue-400 transition-all text-left group shadow-2xs cursor-pointer"
-                >
-                  <div className="flex items-center space-x-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100/70 border border-indigo-200 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                      <Clock className="w-5 h-5" />
-                    </div>
-                    <div className="truncate">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Time</span>
-                      <span className="text-xs sm:text-sm font-bold text-slate-800 font-mono group-hover:text-indigo-600 transition-colors truncate block">
-                        {formatDisplayTime(scheduleTime)}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-semibold text-indigo-600 bg-white border border-indigo-200/80 px-2.5 py-1 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-2xs flex-shrink-0 ml-2">
-                    {scheduleTime ? 'Change' : 'Pick Time'}
-                  </span>
-                </button>
-              </div>
-
-              {/* Sleek One-Click Presets */}
-              <div className="flex items-center flex-wrap gap-1.5 pt-0.5">
-                <span className="text-[11px] text-slate-400 font-medium mr-1">Suggested:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuickDate(1);
-                    setQuickTime('10:00');
-                  }}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 transition-colors shadow-2xs"
-                >
-                  Tomorrow 10:00 AM
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuickDate(1);
-                    setQuickTime('19:30');
-                  }}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 transition-colors shadow-2xs"
-                >
-                  Tomorrow 7:30 PM (Peak)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuickDate(2);
-                    setQuickTime('18:00');
-                  }}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 transition-colors shadow-2xs"
-                >
-                  In 2 Days
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuickDate(5);
-                    setQuickTime('20:00');
-                  }}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 transition-colors shadow-2xs"
-                >
-                  Weekend
-                </button>
-              </div>
-
-              {/* Schedule Confirmation Pill */}
-              {scheduleDate && scheduleTime && (
-                <div className="p-2.5 bg-blue-50/70 border border-blue-200/60 rounded-xl text-xs text-blue-900 font-medium flex items-center space-x-2">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                  <span>
-                    Will be posted on <strong>{formatDisplayDate(scheduleDate)}</strong> at <strong>{formatDisplayTime(scheduleTime)}</strong>
-                  </span>
-                </div>
-              )}
             </div>
           )}
 
