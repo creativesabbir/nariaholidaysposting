@@ -219,7 +219,7 @@ function getCapabilityBadge(caps) {
 
 export function getPlatformCapabilityStatus(platformId, postType, imageCount = 0, platformSettings = {}) {
   if (platformSettings?.[platformId]?.enabled === false) {
-    return { isOff: true, badge: 'Admin Off', reason: 'Disabled in Admin Panel' };
+    return { isOff: true, badge: 'Unavailable', reason: 'Disabled in Admin Panel' };
   }
 
   const caps = PLATFORM_CAPABILITIES[platformId];
