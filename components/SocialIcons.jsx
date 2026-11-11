@@ -210,9 +210,16 @@ export const PLATFORM_CAPABILITIES = {
   listmonk: { text: true, image: false, video: false, reason: { image: 'Listmonk supports text posts only', video: 'Listmonk supports text posts only' } }
 };
 
+function getCapabilityBadge(caps) {
+  if (caps.text && !caps.image && !caps.video) return 'Text Only';
+  if (!caps.text && !caps.image && caps.video) return 'Video Only';
+  if (!caps.text && (caps.image || caps.video)) return 'Media Only';
+  return 'Unavailable';
+}
+
 export function getPlatformCapabilityStatus(platformId, postType, imageCount = 0, platformSettings = {}) {
   if (platformSettings?.[platformId]?.enabled === false) {
-    return { isOff: true, badge: 'Unavailable', reason: 'Disabled in Admin Panel' };
+    return { isOff: true, badge: 'Admin Off', reason: 'Disabled in Admin Panel' };
   }
 
   const caps = PLATFORM_CAPABILITIES[platformId];
@@ -223,7 +230,7 @@ export function getPlatformCapabilityStatus(platformId, postType, imageCount = 0
   if (caps[postType] === false) {
     return {
       isOff: true,
-      badge: 'Unavailable',
+      badge: getCapabilityBadge(caps),
       reason: caps.reason?.[postType] || `Unavailable for ${postType} posts`
     };
   }
@@ -231,7 +238,7 @@ export function getPlatformCapabilityStatus(platformId, postType, imageCount = 0
   if (postType === 'image' && caps.maxImages && imageCount > caps.maxImages) {
     return {
       isOff: true,
-      badge: platformId === 'google_business' ? 'Disabled' : 'Unavailable',
+      badge: `${caps.maxImages} Img Max`,
       reason: caps.reason?.multiImage || `Supports max ${caps.maxImages} image`
     };
   }

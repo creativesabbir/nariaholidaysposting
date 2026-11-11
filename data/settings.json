@@ -84,8 +84,8 @@
     },
     "listmonk": {
       "name": "Listmonk",
-      "status": "active",
-      "enabled": true
+      "enabled": true,
+      "status": "active"
     },
     "_branding": {
       "logoUrl": "/logo.png",

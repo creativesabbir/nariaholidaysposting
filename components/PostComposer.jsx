@@ -78,11 +78,31 @@ export default function PostComposer({
   });
 
   useEffect(() => {
-    fetchSettings().then(data => {
-      if (data?.settings?.platforms) {
-        setPlatformSettings(data.settings.platforms);
+    const loadPlatformSettings = () => {
+      fetchSettings(true).then(data => {
+        if (data?.settings?.platforms) {
+          setPlatformSettings(data.settings.platforms);
+        }
+      }).catch(() => {});
+    };
+
+    loadPlatformSettings();
+
+    const handleVisibilityOrFocus = () => {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        loadPlatformSettings();
       }
-    }).catch(() => {});
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('nh_settings_updated', loadPlatformSettings);
+
+    return () => {
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('nh_settings_updated', loadPlatformSettings);
+    };
   }, []);
   
   // Custom Date and Time states for high-end schedule picker

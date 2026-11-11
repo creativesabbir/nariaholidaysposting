@@ -203,7 +203,7 @@ export default function AdminPage() {
       const [uList, uCurrent, sets, auth] = await Promise.all([
         fetchUsers(),
         fetchCurrentUser(),
-        fetchSettings(),
+        fetchSettings(true),
         fetchAuthSession()
       ]);
       if (Array.isArray(uList)) setUsers(uList);
@@ -413,11 +413,12 @@ export default function AdminPage() {
 
   // Platform Toggle Action
   const handleTogglePlatform = async (platformId) => {
-    const currentStatus = settings.platforms?.[platformId]?.enabled ?? true;
+    const prevPlatforms = settings.platforms || {};
+    const currentStatus = prevPlatforms[platformId]?.enabled ?? true;
     const newStatus = !currentStatus;
 
     const updatedPlatforms = {
-      ...settings.platforms,
+      ...prevPlatforms,
       [platformId]: {
         name: ALL_PLATFORMS.find(p => p.id === platformId)?.name || platformId,
         enabled: newStatus,
@@ -431,9 +432,29 @@ export default function AdminPage() {
     }));
 
     try {
-      await updateSettings({ platforms: updatedPlatforms });
+      const res = await updateSettings({
+        platforms: {
+          [platformId]: updatedPlatforms[platformId]
+        }
+      });
+      if (!res?.success) {
+        throw new Error(res?.error || 'Failed to save platform status');
+      }
+      if (res?.settings?.platforms) {
+        setSettings(prev => ({ ...prev, platforms: res.settings.platforms }));
+      }
     } catch (err) {
       console.error('Failed to toggle platform:', err);
+      setSettings(prev => ({
+        ...prev,
+        platforms: prevPlatforms
+      }));
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not update platform setting. Please try again.'
+      });
     }
   };
 
