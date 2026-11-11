@@ -89,9 +89,16 @@ export async function POST(request) {
       scheduledAt = null
     } = body;
 
-    if (!caption.trim() && mediaUrls.length === 0) {
+    if (type === 'text' && !caption.trim()) {
+      return NextResponse.json({ error: 'Text content is required for text posts' }, { status: 400 });
+    }
+    if (type !== 'text' && !caption.trim() && mediaUrls.length === 0) {
       return NextResponse.json({ error: 'Caption or media is required' }, { status: 400 });
     }
+
+    const finalMediaUrls = type === 'text' ? [] : mediaUrls;
+    const finalThumbnailUrl = type === 'text' ? null : thumbnailUrl;
+    const fallbackPlatforms = type === 'text' ? ['facebook', 'linkedin'] : ['facebook', 'instagram'];
 
     // Identify user from session or current profile
     const sessionCookie = request.cookies.get('nh_session')?.value;
@@ -111,9 +118,9 @@ export async function POST(request) {
       id: `post-${Date.now()}`,
       type,
       caption,
-      mediaUrls,
-      thumbnailUrl,
-      platforms: platforms.length > 0 ? platforms : ['facebook', 'instagram'],
+      mediaUrls: finalMediaUrls,
+      thumbnailUrl: finalThumbnailUrl,
+      platforms: platforms.length > 0 ? platforms : fallbackPlatforms,
       status: isScheduled ? 'scheduled' : 'pending', // Starts as pending until n8n finishes publishing
       createdAt: new Date().toISOString(),
       scheduledAt: isScheduled ? scheduledAt : null,

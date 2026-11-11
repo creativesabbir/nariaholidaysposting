@@ -109,6 +109,31 @@ export function GoogleBusinessIcon({ className = "w-4 h-4", ...props }) {
   );
 }
 
+export function SlackIcon({ className = "w-4 h-4", ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+    </svg>
+  );
+}
+
+export function WhopIcon({ className = "w-4 h-4", ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <rect x="0" y="0" width="24" height="24" rx="5.5" fill="currentColor" />
+      <path d="M5 7 L8.4 17 L12 10.6 L15.6 17 L19 7" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function ListmonkIcon({ className = "w-4 h-4", ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 512 512" fill="currentColor" {...props}>
+      <path d="M500 20 12 262l190 58-16 168 96-112 150 110zM202 320 452 78 262 288z"/>
+    </svg>
+  );
+}
+
 export function FacebookGlobeIcon({ className = "w-3 h-3 text-[#65676B]", ...props }) {
   return (
     <svg 
@@ -140,5 +165,76 @@ export const PLATFORM_INFO = {
   bluesky: { name: 'Bluesky', icon: BlueskyIcon, color: 'text-sky-500', bg: 'bg-sky-50 hover:bg-sky-100' },
   discord: { name: 'Discord', icon: DiscordIcon, color: 'text-indigo-600', bg: 'bg-indigo-50 hover:bg-indigo-100' },
   telegram: { name: 'Telegram', icon: TelegramIcon, color: 'text-sky-500', bg: 'bg-sky-50 hover:bg-sky-100' },
-  google_business: { name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500', bg: 'bg-blue-50 hover:bg-blue-100' }
+  google_business: { name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500', bg: 'bg-blue-50 hover:bg-blue-100' },
+  slack: { name: 'Slack', icon: SlackIcon, color: 'text-[#611f69]', bg: 'bg-purple-50 hover:bg-purple-100' },
+  whop: { name: 'Whop', icon: WhopIcon, color: 'text-[#FF6243]', bg: 'bg-orange-50 hover:bg-orange-100' },
+  listmonk: { name: 'Listmonk', icon: ListmonkIcon, color: 'text-[#00A98F]', bg: 'bg-emerald-50 hover:bg-emerald-100' }
 };
+
+export const ALL_SOCIAL_PLATFORMS = [
+  { id: 'tiktok', name: 'TikTok', icon: TikTokIcon, color: 'text-slate-900', defaultEnabled: true },
+  { id: 'instagram', name: 'Instagram', icon: InstagramIcon, color: 'text-pink-600', defaultEnabled: true },
+  { id: 'linkedin', name: 'LinkedIn', icon: LinkedinIcon, color: 'text-blue-600', defaultEnabled: true },
+  { id: 'youtube', name: 'YouTube', icon: YoutubeIcon, color: 'text-red-600', defaultEnabled: true },
+  { id: 'facebook', name: 'Facebook', icon: FacebookIcon, color: 'text-blue-600', defaultEnabled: true },
+  { id: 'x', name: 'X', adminName: 'X / Twitter', icon: TwitterIcon, color: 'text-slate-900', defaultEnabled: true },
+  { id: 'pinterest', name: 'Pinterest', icon: PinterestIcon, color: 'text-red-600', defaultEnabled: true },
+  { id: 'reddit', name: 'Reddit', icon: RedditIcon, color: 'text-orange-600', defaultEnabled: true },
+  { id: 'threads', name: 'Threads', icon: ThreadsIcon, color: 'text-slate-900', defaultEnabled: true },
+  { id: 'bluesky', name: 'Bluesky', icon: BlueskyIcon, color: 'text-sky-500', defaultEnabled: true },
+  { id: 'discord', name: 'Discord', icon: DiscordIcon, color: 'text-indigo-600', defaultEnabled: true },
+  { id: 'telegram', name: 'Telegram', icon: TelegramIcon, color: 'text-sky-500', defaultEnabled: true },
+  { id: 'google_business', name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500', defaultEnabled: true },
+  { id: 'slack', name: 'Slack', icon: SlackIcon, color: 'text-[#611f69]', defaultEnabled: true },
+  { id: 'whop', name: 'Whop', icon: WhopIcon, color: 'text-[#FF6243]', defaultEnabled: true },
+  { id: 'listmonk', name: 'Listmonk', icon: ListmonkIcon, color: 'text-[#00A98F]', defaultEnabled: true }
+];
+
+// Media / Post-Type compatibility rules per platform
+export const PLATFORM_CAPABILITIES = {
+  tiktok: { text: false, image: true, video: true, reason: { text: 'TikTok requires a photo or video post' } },
+  instagram: { text: false, image: true, video: true, reason: { text: 'Instagram requires a photo or video post' } },
+  linkedin: { text: true, image: true, video: true },
+  youtube: { text: false, image: false, video: true, reason: { text: 'YouTube supports video posts only', image: 'YouTube is not available for image posts (video only)' } },
+  facebook: { text: true, image: true, video: true },
+  x: { text: true, image: false, video: false, reason: { image: 'X / Twitter supports text-only posts', video: 'X / Twitter supports text-only posts' } },
+  pinterest: { text: false, image: true, video: true, maxImages: 1, reason: { text: 'Pinterest requires an image or video Pin', multiImage: 'Pinterest supports single image per pin only' } },
+  reddit: { text: true, image: true, video: true },
+  threads: { text: true, image: true, video: true },
+  bluesky: { text: true, image: true, video: true },
+  discord: { text: true, image: true, video: true },
+  telegram: { text: true, image: true, video: true },
+  google_business: { text: true, image: true, video: true, maxImages: 1, reason: { multiImage: 'Google Business profile supports single image only' } },
+  slack: { text: true, image: false, video: false, reason: { image: 'Slack supports text posts only', video: 'Slack supports text posts only' } },
+  whop: { text: true, image: false, video: false, reason: { image: 'Whop supports text posts only', video: 'Whop supports text posts only' } },
+  listmonk: { text: true, image: false, video: false, reason: { image: 'Listmonk supports text posts only', video: 'Listmonk supports text posts only' } }
+};
+
+export function getPlatformCapabilityStatus(platformId, postType, imageCount = 0, platformSettings = {}) {
+  if (platformSettings?.[platformId]?.enabled === false) {
+    return { isOff: true, badge: 'Unavailable', reason: 'Disabled in Admin Panel' };
+  }
+
+  const caps = PLATFORM_CAPABILITIES[platformId];
+  if (!caps) {
+    return { isOff: false, badge: null, reason: '' };
+  }
+
+  if (caps[postType] === false) {
+    return {
+      isOff: true,
+      badge: 'Unavailable',
+      reason: caps.reason?.[postType] || `Unavailable for ${postType} posts`
+    };
+  }
+
+  if (postType === 'image' && caps.maxImages && imageCount > caps.maxImages) {
+    return {
+      isOff: true,
+      badge: platformId === 'google_business' ? 'Disabled' : 'Unavailable',
+      reason: caps.reason?.multiImage || `Supports max ${caps.maxImages} image`
+    };
+  }
+
+  return { isOff: false, badge: null, reason: '' };
+}

@@ -13,9 +13,10 @@ import {
   Image as ImageIcon,
   Video,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Repeat2
 } from 'lucide-react';
-import { FacebookIcon, InstagramIcon, FacebookGlobeIcon } from './SocialIcons';
+import { FacebookIcon, InstagramIcon, TwitterIcon, FacebookGlobeIcon } from './SocialIcons';
 import VerifiedBadge from './VerifiedBadge';
 
 export default function LivePreview({ 
@@ -64,10 +65,27 @@ export default function LivePreview({
     setActiveSlide(0);
   }, [mediaUrls, mediaUrl]);
 
+  useEffect(() => {
+    if (type === 'text' && platform === 'ig') {
+      setPlatform('fb');
+    } else if (type !== 'text' && platform === 'x') {
+      setPlatform('fb');
+    }
+  }, [type, platform]);
+
   const imageList = (mediaUrls && mediaUrls.length > 0) ? mediaUrls : (mediaUrl ? [mediaUrl] : []);
 
   const renderFBCaption = () => {
-    if (!caption?.trim()) return null;
+    if (!caption?.trim()) {
+      if (type === 'text') {
+        return (
+          <div className="px-3.5 pb-6 pt-1 text-xs sm:text-sm text-slate-400 italic leading-relaxed">
+            Your text update preview will appear here as you type...
+          </div>
+        );
+      }
+      return null;
+    }
 
     const trimmed = caption.trim();
     const lines = trimmed.split('\n');
@@ -214,6 +232,10 @@ export default function LivePreview({
   );
 
   const renderFBMedia = () => {
+    if (type === 'text') {
+      return null;
+    }
+
     if (type === 'video') {
       if (!mediaUrl) return renderMediaPlaceholder();
       return (
@@ -400,23 +422,36 @@ export default function LivePreview({
           <button
             type="button"
             onClick={() => setPlatform('fb')}
-            className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               platform === 'fb' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <FacebookIcon className="w-3.5 h-3.5 text-blue-600" />
             <span>Facebook</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setPlatform('ig')}
-            className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-              platform === 'ig' ? 'bg-white text-pink-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
-            <span>Instagram</span>
-          </button>
+          {type === 'text' ? (
+            <button
+              type="button"
+              onClick={() => setPlatform('x')}
+              className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                platform === 'x' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <TwitterIcon className="w-3.5 h-3.5 text-slate-900" />
+              <span>X</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPlatform('ig')}
+              className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                platform === 'ig' ? 'bg-white text-pink-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <InstagramIcon className="w-3.5 h-3.5 text-pink-600" />
+              <span>Instagram</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -514,6 +549,60 @@ export default function LivePreview({
                   </svg>
                 </span>
               </div>
+            </div>
+          </div>
+        ) : platform === 'x' && type === 'text' ? (
+          /* X / TWITTER TEXT PREVIEW */
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-slate-900 p-4 space-y-3">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-white border border-slate-200 p-0.5 flex items-center justify-center shadow-xs overflow-hidden flex-shrink-0">
+                  <img 
+                    src={brandIcon || '/logo-icon.png'} 
+                    alt="Naria Holidays" 
+                    className="w-full h-full object-contain" 
+                    onError={() => setBrandIcon('/logo-icon.png')}
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs font-bold text-slate-900">Naria Holidays</span>
+                    <VerifiedBadge className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] text-slate-500">@nariaholidays • Now</span>
+                </div>
+              </div>
+              <button type="button" className="text-slate-400 hover:text-slate-600 p-1">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </div>
+
+            {caption?.trim() ? (
+              <div className="text-xs sm:text-sm text-slate-900 leading-relaxed whitespace-pre-wrap break-words">
+                {caption.trim()}
+              </div>
+            ) : (
+              <div className="text-xs sm:text-sm text-slate-400 italic leading-relaxed py-2">
+                Your X / Twitter text post preview will appear here...
+              </div>
+            )}
+
+            <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-slate-500 text-xs">
+              <div className="flex items-center space-x-5">
+                <span className="inline-flex items-center space-x-1 hover:text-blue-500 cursor-pointer">
+                  <MessageSquare className="w-4 h-4" />
+                  <span>12</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 hover:text-emerald-600 cursor-pointer">
+                  <Repeat2 className="w-4 h-4" />
+                  <span>34</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 hover:text-rose-600 cursor-pointer">
+                  <Heart className="w-4 h-4" />
+                  <span>218</span>
+                </span>
+              </div>
+              <Bookmark className="w-4 h-4 hover:text-blue-500 cursor-pointer" />
             </div>
           </div>
         ) : (

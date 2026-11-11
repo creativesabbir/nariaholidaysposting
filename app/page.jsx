@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import PostComposer from '@/components/PostComposer';
 import LivePreview from '@/components/LivePreview';
-import { Video, Image as ImageIcon } from 'lucide-react';
+import { Video, Image as ImageIcon, FileText } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('image'); // 'video' or 'image'
+  const [activeTab, setActiveTab] = useState('image'); // 'image', 'video', or 'text'
   const { currentUser, isLoadingUser } = useAuth();
 
   // Clean empty state by default - no pre-selected media or caption
@@ -29,8 +29,8 @@ export default function Home() {
           </p>
         </div>
 
-        {/* TWO MAIN TABS (Image on Left, Video on Right) */}
-        <div className="inline-flex p-1 bg-slate-200/80 rounded-xl max-w-xs self-start md:self-auto shadow-inner">
+        {/* THREE MAIN TABS (Image, Video, Text) */}
+        <div className="inline-flex p-1 bg-slate-200/80 rounded-xl self-start md:self-auto shadow-inner">
           <button
             type="button"
             onClick={() => {
@@ -41,7 +41,7 @@ export default function Home() {
                 setMediaFile(null);
               }
             }}
-            className={`flex items-center space-x-2 py-2 px-5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center space-x-2 py-2 px-4 sm:px-5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'image'
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -61,7 +61,7 @@ export default function Home() {
                 setMediaFile(null);
               }
             }}
-            className={`flex items-center space-x-2 py-2 px-5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center space-x-2 py-2 px-4 sm:px-5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'video'
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -69,6 +69,26 @@ export default function Home() {
           >
             <Video className="w-4 h-4 text-blue-600" />
             <span>Video</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('text');
+              if (mediaUrl || mediaUrls.length > 0 || mediaFile) {
+                setMediaUrl('');
+                setMediaUrls([]);
+                setMediaFile(null);
+              }
+            }}
+            className={`flex items-center space-x-2 py-2 px-4 sm:px-5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'text'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FileText className="w-4 h-4 text-blue-600" />
+            <span>Text</span>
           </button>
         </div>
       </div>

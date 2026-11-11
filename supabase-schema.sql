@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 -- 2. Posts Table (Campaigns: Published, Scheduled, Drafts)
 CREATE TABLE IF NOT EXISTS public.posts (
   id TEXT PRIMARY KEY,
-  type TEXT NOT NULL DEFAULT 'image', -- 'image' or 'video'
+  type TEXT NOT NULL DEFAULT 'image', -- 'image', 'video', or 'text'
   caption TEXT,
   media_urls JSONB DEFAULT '[]'::jsonb,
   thumbnail_url TEXT,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.posts (
   n8n_dispatched BOOLEAN DEFAULT false
 );
 
--- 3. Automation Settings Table (n8n Webhook & 13 Platform Toggles)
+-- 3. Automation Settings Table (n8n Webhook & 16 Platform Toggles)
 CREATE TABLE IF NOT EXISTS public.settings (
   id TEXT PRIMARY KEY DEFAULT 'app_settings',
   n8n_webhook_url TEXT,
@@ -86,7 +86,10 @@ VALUES (
     "bluesky": {"name": "Bluesky", "enabled": true, "status": "active"},
     "discord": {"name": "Discord", "enabled": true, "status": "active"},
     "telegram": {"name": "Telegram", "enabled": true, "status": "active"},
-    "google_business": {"name": "Google Business", "enabled": true, "status": "active"}
+    "google_business": {"name": "Google Business", "enabled": true, "status": "active"},
+    "slack": {"name": "Slack", "enabled": true, "status": "active"},
+    "whop": {"name": "Whop", "enabled": true, "status": "active"},
+    "listmonk": {"name": "Listmonk", "enabled": true, "status": "active"}
   }'::jsonb
 )
 ON CONFLICT (id) DO NOTHING;

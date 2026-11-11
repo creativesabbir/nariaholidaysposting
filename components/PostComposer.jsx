@@ -5,6 +5,7 @@ import {
   Upload, 
   Image as ImageIcon, 
   Video, 
+  FileText,
   Send, 
   X, 
   Check, 
@@ -18,42 +19,14 @@ import {
   Film
 } from 'lucide-react';
 import { 
-  TikTokIcon,
-  InstagramIcon,
-  LinkedinIcon,
-  YoutubeIcon,
-  FacebookIcon,
-  TwitterIcon,
-  PinterestIcon,
-  RedditIcon,
-  ThreadsIcon,
-  BlueskyIcon,
-  DiscordIcon,
-  TelegramIcon,
-  GoogleBusinessIcon
+  ALL_SOCIAL_PLATFORMS as SOCIAL_ACCOUNTS,
+  getPlatformCapabilityStatus
 } from './SocialIcons';
 import FeedbackModal from './FeedbackModal';
 import CalendarModal from './CalendarModal';
 import TimePickerModal from './TimePickerModal';
 import { createPost, uploadMediaFile, fetchSettings } from '@/lib/api';
 import { compressImageIfNeeded } from '@/lib/imageOptimizer';
-
-// Exact 13 platforms matching user's reference image
-const SOCIAL_ACCOUNTS = [
-  { id: 'tiktok', name: 'TikTok', icon: TikTokIcon, color: 'text-slate-900' },
-  { id: 'instagram', name: 'Instagram', icon: InstagramIcon, color: 'text-pink-600' },
-  { id: 'linkedin', name: 'LinkedIn', icon: LinkedinIcon, color: 'text-blue-600' },
-  { id: 'youtube', name: 'YouTube', icon: YoutubeIcon, color: 'text-red-600' },
-  { id: 'facebook', name: 'Facebook', icon: FacebookIcon, color: 'text-blue-600' },
-  { id: 'x', name: 'X', icon: TwitterIcon, color: 'text-slate-900' },
-  { id: 'pinterest', name: 'Pinterest', icon: PinterestIcon, color: 'text-red-600' },
-  { id: 'reddit', name: 'Reddit', icon: RedditIcon, color: 'text-orange-600' },
-  { id: 'threads', name: 'Threads', icon: ThreadsIcon, color: 'text-slate-900' },
-  { id: 'bluesky', name: 'Bluesky', icon: BlueskyIcon, color: 'text-sky-500' },
-  { id: 'discord', name: 'Discord', icon: DiscordIcon, color: 'text-indigo-600' },
-  { id: 'telegram', name: 'Telegram', icon: TelegramIcon, color: 'text-sky-500' },
-  { id: 'google_business', name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500' }
-];
 
 const SUGGESTED_TAGS = [
   '#NariaHolidays',
@@ -456,45 +429,19 @@ export default function PostComposer({
     setMediaFile(null);
   };
 
-  // Determine whether a platform is currently disabled
+  // Determine whether a platform is currently disabled based on Admin settings & Post Type rules
   const getPlatformStatus = (platformId) => {
-    // 1. Admin switchboard disable
-    if (platformSettings[platformId] && platformSettings[platformId].enabled === false) {
-      return { isOff: true, badge: 'Unavailable' };
-    }
-    // 2. YouTube is off in Image tab (video only)
-    if (platformId === 'youtube' && activeTab === 'image') {
-      return { isOff: true, badge: 'Unavailable' };
-    }
-    // 3. Pinterest is disabled when multiple images are uploaded (supports single image per pin only)
-    if (platformId === 'pinterest' && activeTab === 'image' && mediaUrls && mediaUrls.length > 1) {
-      return { isOff: true, badge: 'Unavailable' };
-    }
-    // 4. Google Business is disabled when multiple images are selected (supports single photo only)
-    if (platformId === 'google_business' && activeTab === 'image' && mediaUrls && mediaUrls.length > 1) {
-      return { isOff: true, badge: 'Disabled' };
-    }
-    return { isOff: false, badge: null };
+    const imgCount = mediaUrls ? mediaUrls.length : (mediaUrl ? 1 : 0);
+    return getPlatformCapabilityStatus(platformId, activeTab, imgCount, platformSettings);
   };
 
-  // Auto-deselect platforms that become disabled based on media / tab rules
+  // Auto-deselect platforms that become disabled based on post type / media rules
   useEffect(() => {
     setSelectedPlatforms(prev => {
-      let updated = [...prev];
-      if (activeTab === 'image' && updated.includes('youtube')) {
-        updated = updated.filter(id => id !== 'youtube');
-      }
-      if (activeTab === 'image' && mediaUrls && mediaUrls.length > 1) {
-        if (updated.includes('pinterest')) {
-          updated = updated.filter(id => id !== 'pinterest');
-        }
-        if (updated.includes('google_business')) {
-          updated = updated.filter(id => id !== 'google_business');
-        }
-      }
-      return updated;
+      const next = prev.filter(id => !getPlatformStatus(id).isOff);
+      return next.length === prev.length ? prev : next;
     });
-  }, [activeTab, mediaUrls]);
+  }, [activeTab, mediaUrls, mediaUrl, platformSettings]);
 
   const togglePlatform = (id) => {
     const status = getPlatformStatus(id);
@@ -540,9 +487,22 @@ export default function PostComposer({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const hasMedia = activeTab === 'image' 
-      ? ((mediaUrls && mediaUrls.length > 0) || !!mediaUrl) 
-      : !!mediaUrl;
+    const hasMedia = activeTab === 'text'
+      ? false
+      : activeTab === 'image'
+        ? ((mediaUrls && mediaUrls.length > 0) || !!mediaUrl)
+        : !!mediaUrl;
+
+    if (activeTab === 'text' && !caption.trim()) {
+      setModalConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Text Content Required',
+        message: 'Please write your post text before publishing.',
+        confirmText: 'Understood'
+      });
+      return;
+    }
 
     if (!caption.trim() && !hasMedia) {
       setModalConfig({
@@ -584,9 +544,11 @@ export default function PostComposer({
     try {
       setIsSubmitting(true);
 
-      const finalMediaUrls = activeTab === 'image'
-        ? ((mediaUrls && mediaUrls.length > 0) ? mediaUrls : (mediaUrl ? [mediaUrl] : []))
-        : (mediaUrl ? [mediaUrl] : []);
+      const finalMediaUrls = activeTab === 'text'
+        ? []
+        : activeTab === 'image'
+          ? ((mediaUrls && mediaUrls.length > 0) ? mediaUrls : (mediaUrl ? [mediaUrl] : []))
+          : (mediaUrl ? [mediaUrl] : []);
 
       const finalPlatforms = selectedPlatforms.filter(id => !getPlatformStatus(id).isOff);
 
@@ -667,31 +629,42 @@ export default function PostComposer({
         <div className="flex items-center space-x-2.5">
           {activeTab === 'video' ? (
             <Video className="w-4 h-4 text-blue-600" />
+          ) : activeTab === 'text' ? (
+            <FileText className="w-4 h-4 text-blue-600" />
           ) : (
             <ImageIcon className="w-4 h-4 text-blue-600" />
           )}
           <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            {activeTab === 'video' ? 'Video Post Composer' : 'Image Post Composer'}
+            {activeTab === 'video'
+              ? 'Video Post Composer'
+              : activeTab === 'text'
+                ? 'Text Post Composer'
+                : 'Image Post Composer'}
           </span>
         </div>
 
         <span className="text-xs text-slate-500">
-          {activeTab === 'video' ? 'Reels, Shorts & Feed Clips' : 'Photos, Flyers & Banners'}
+          {activeTab === 'video'
+            ? 'Reels, Shorts & Feed Clips'
+            : activeTab === 'text'
+              ? 'Updates, X, Slack, Whop & Newsletters'
+              : 'Photos, Flyers & Banners'}
         </span>
       </div>
 
       {/* Main Composer Form */}
       <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-6">
-        {/* 1. Media Upload Area */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-              {activeTab === 'video' ? 'Video File' : `Images (${(mediaUrls && mediaUrls.length) || 0})`}
-            </label>
-            <span className="text-[11px] text-slate-400">
-              {activeTab === 'video' ? 'MP4, MOV, WebM' : 'Multiple PNG, JPG, WebP supported'}
-            </span>
-          </div>
+        {/* 1. Media Upload Area (Hidden in Text Post mode) */}
+        {activeTab !== 'text' && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                {activeTab === 'video' ? 'Video File' : `Images (${(mediaUrls && mediaUrls.length) || 0})`}
+              </label>
+              <span className="text-[11px] text-slate-400">
+                {activeTab === 'video' ? 'MP4, MOV, WebM' : 'Multiple PNG, JPG, WebP supported'}
+              </span>
+            </div>
 
           {activeTab === 'image' ? (
             imageUploadState.isUploading ? (
@@ -1017,16 +990,35 @@ export default function PostComposer({
             )
           )}
         </div>
+        )}
 
-        {/* 2. Caption Area */}
+        {/* 2. Caption / Text Content Area */}
         <div>
+          {activeTab === 'text' && (
+            <div className="mb-3 px-3.5 py-2.5 rounded-xl bg-blue-50/70 border border-blue-200/70 flex items-center justify-between gap-2 text-xs text-blue-800">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span>
+                  <strong>Text-Only Mode:</strong> Enabled for X / Twitter, Slack, Whop, Listmonk, Facebook, LinkedIn &amp; text-supported channels.
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-              Post Caption
+              {activeTab === 'text' ? 'Post Text Content' : 'Post Caption'}
             </label>
-            <span className="text-[11px] text-slate-400 font-mono">
-              {caption.length} / 2,200
-            </span>
+            <div className="flex items-center space-x-2">
+              {selectedPlatforms.includes('x') && caption.length > 280 && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                  X standard limit: 280 chars
+                </span>
+              )}
+              <span className="text-[11px] text-slate-400 font-mono">
+                {caption.length} / 2,200
+              </span>
+            </div>
           </div>
           <textarea
             ref={captionTextareaRef}
@@ -1035,8 +1027,14 @@ export default function PostComposer({
               setCaption(e.target.value);
               adjustCaptionHeight();
             }}
-            placeholder="Write caption..."
-            className="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors leading-relaxed resize-none min-h-[160px] max-h-[350px]"
+            placeholder={
+              activeTab === 'text'
+                ? 'Write your text update, tweet, Slack announcement, or newsletter copy...'
+                : 'Write caption...'
+            }
+            className={`w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors leading-relaxed resize-none max-h-[350px] ${
+              activeTab === 'text' ? 'min-h-[200px]' : 'min-h-[160px]'
+            }`}
           />
 
           {/* Quick Hashtags Chips */}
@@ -1103,15 +1101,7 @@ export default function PostComposer({
                   <div
                     key={acc.id}
                     className="h-11 rounded-full border border-slate-200 bg-slate-100/70 px-4 flex items-center justify-between text-xs text-slate-400 opacity-60 cursor-not-allowed select-none transition-all"
-                    title={
-                      acc.id === 'youtube' && activeTab === 'image'
-                        ? 'YouTube is not available for image posts (video only)'
-                        : acc.id === 'pinterest' && mediaUrls && mediaUrls.length > 1
-                        ? 'Pinterest supports single image per pin only'
-                        : acc.id === 'google_business' && mediaUrls && mediaUrls.length > 1
-                        ? 'Google Business profile supports single image only'
-                        : `${acc.name} is unavailable`
-                    }
+                    title={status.reason || `${acc.name} is unavailable`}
                   >
                     <div className="flex items-center space-x-2.5">
                       <Icon className="w-4 h-4 text-slate-400" />

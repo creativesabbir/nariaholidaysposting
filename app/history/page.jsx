@@ -8,6 +8,7 @@ import {
   Trash2, 
   Image as ImageIcon, 
   Video, 
+  FileText,
   Clock, 
   CheckCircle2, 
   PlusCircle,
@@ -139,6 +140,7 @@ export default function HistoryPage() {
   const filteredPosts = posts.filter((post) => {
     if (filterType === 'image' && post.type !== 'image') return false;
     if (filterType === 'video' && post.type !== 'video') return false;
+    if (filterType === 'text' && post.type !== 'text') return false;
     if (filterType === 'pending' && post.status !== 'pending') return false;
     if (filterType === 'scheduled' && post.status !== 'scheduled') return false;
     if (filterType === 'published' && post.status !== 'published') return false;
@@ -239,6 +241,16 @@ export default function HistoryPage() {
           >
             Videos
           </button>
+          <button
+            onClick={() => setFilterType('text')}
+            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap font-semibold cursor-pointer ${
+              filterType === 'text'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Text
+          </button>
         </div>
 
         {/* Search Input and Refresh Button */}
@@ -312,7 +324,12 @@ export default function HistoryPage() {
                   <div className="flex items-start space-x-4 overflow-hidden">
                     {/* Media Thumbnail */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200 flex items-center justify-center relative shadow-xs">
-                      {post.type === 'video' ? (
+                      {post.type === 'text' ? (
+                        <div className="w-full h-full bg-blue-50/80 flex flex-col items-center justify-center">
+                          <FileText className="w-6 h-6 text-blue-600" />
+                          <span className="text-[9px] font-bold text-blue-600 mt-0.5 uppercase tracking-wider">Text</span>
+                        </div>
+                      ) : post.type === 'video' ? (
                         postImage ? (
                           <video src={postImage} className="w-full h-full object-cover" />
                         ) : (

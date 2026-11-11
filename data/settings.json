@@ -9,13 +9,13 @@
   "platforms": {
     "tiktok": {
       "name": "TikTok",
-      "status": "inactive",
-      "enabled": false
+      "status": "active",
+      "enabled": true
     },
     "instagram": {
       "name": "Instagram",
-      "status": "inactive",
-      "enabled": false
+      "status": "active",
+      "enabled": true
     },
     "linkedin": {
       "name": "LinkedIn",
@@ -49,18 +49,18 @@
     },
     "threads": {
       "name": "Threads",
-      "status": "inactive",
-      "enabled": false
+      "status": "active",
+      "enabled": true
     },
     "bluesky": {
       "name": "Bluesky",
-      "status": "inactive",
-      "enabled": false
+      "status": "active",
+      "enabled": true
     },
     "discord": {
       "name": "Discord",
-      "status": "inactive",
-      "enabled": false
+      "status": "active",
+      "enabled": true
     },
     "telegram": {
       "name": "Telegram",
@@ -69,6 +69,21 @@
     },
     "google_business": {
       "name": "Google Business",
+      "status": "inactive",
+      "enabled": false
+    },
+    "slack": {
+      "name": "Slack",
+      "enabled": true,
+      "status": "active"
+    },
+    "whop": {
+      "name": "Whop",
+      "enabled": true,
+      "status": "active"
+    },
+    "listmonk": {
+      "name": "Listmonk",
       "status": "active",
       "enabled": true
     },

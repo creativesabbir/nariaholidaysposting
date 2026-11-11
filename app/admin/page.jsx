@@ -45,37 +45,7 @@ import {
   fetchAuthSession,
   uploadMediaFile
 } from '@/lib/api';
-import { 
-  TikTokIcon, 
-  InstagramIcon, 
-  LinkedinIcon, 
-  YoutubeIcon, 
-  FacebookIcon, 
-  TwitterIcon, 
-  PinterestIcon, 
-  RedditIcon, 
-  ThreadsIcon, 
-  BlueskyIcon, 
-  DiscordIcon, 
-  TelegramIcon, 
-  GoogleBusinessIcon 
-} from '@/components/SocialIcons';
-
-const ALL_PLATFORMS = [
-  { id: 'facebook', name: 'Facebook', icon: FacebookIcon, color: 'text-blue-600', defaultEnabled: true },
-  { id: 'instagram', name: 'Instagram', icon: InstagramIcon, color: 'text-pink-600', defaultEnabled: true },
-  { id: 'youtube', name: 'YouTube', icon: YoutubeIcon, color: 'text-red-600', defaultEnabled: true },
-  { id: 'tiktok', name: 'TikTok', icon: TikTokIcon, color: 'text-slate-900', defaultEnabled: true },
-  { id: 'linkedin', name: 'LinkedIn', icon: LinkedinIcon, color: 'text-blue-600', defaultEnabled: true },
-  { id: 'x', name: 'X / Twitter', icon: TwitterIcon, color: 'text-slate-900', defaultEnabled: true },
-  { id: 'threads', name: 'Threads', icon: ThreadsIcon, color: 'text-slate-900', defaultEnabled: true },
-  { id: 'bluesky', name: 'Bluesky', icon: BlueskyIcon, color: 'text-sky-500', defaultEnabled: true },
-  { id: 'discord', name: 'Discord', icon: DiscordIcon, color: 'text-indigo-600', defaultEnabled: true },
-  { id: 'telegram', name: 'Telegram', icon: TelegramIcon, color: 'text-sky-500', defaultEnabled: true },
-  { id: 'pinterest', name: 'Pinterest', icon: PinterestIcon, color: 'text-red-600', defaultEnabled: true },
-  { id: 'google_business', name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500', defaultEnabled: true },
-  { id: 'reddit', name: 'Reddit', icon: RedditIcon, color: 'text-orange-600', defaultEnabled: true }
-];
+import { ALL_SOCIAL_PLATFORMS as ALL_PLATFORMS } from '@/components/SocialIcons';
 
 const N8N_PAYLOAD_EXAMPLES = {
   image: {
@@ -144,6 +114,26 @@ const N8N_PAYLOAD_EXAMPLES = {
     publishedByEmail: "excreative.info@gmail.com",
     scheduledAt: "2026-11-08T19:30:00",
     timestamp: "2026-11-04T10:45:00.000Z"
+  },
+  text: {
+    event: "post.publish",
+    postId: "post-1793859123456",
+    type: "text",
+    caption: "✈️ Flash Update: Sajek & Cox's Bazar Group Tour early-bird seats are now open! Message us or check Slack/Listmonk updates for agency rates. #NariaHolidays #TravelBangladesh",
+    mediaUrls: [],
+    mediaUrl: "",
+    platforms: ["x", "slack", "whop", "listmonk", "facebook", "linkedin"],
+    author: {
+      id: "d2854f01-aeb1-4d99-9908-86bdf0380044",
+      name: "Abir Hasan Sabbir",
+      email: "excreative.info@gmail.com",
+      role: "Founder & Travel Consultant",
+      avatar: "https://i.ibb.co/21vvfcbS/abir-hasan-avatar.jpg"
+    },
+    publishedBy: "Abir Hasan Sabbir",
+    publishedByEmail: "excreative.info@gmail.com",
+    scheduledAt: null,
+    timestamp: "2026-11-11T06:30:00.000Z"
   }
 };
 
@@ -679,7 +669,7 @@ export default function AdminPage() {
             <Share2 className="w-4 h-4" />
             <span>Platform Controls</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-              13 channels
+              {ALL_PLATFORMS.length} channels
             </span>
           </button>
 
@@ -1131,6 +1121,17 @@ export default function AdminPage() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setActivePayloadTab('text')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      activePayloadTab === 'text'
+                        ? 'bg-white text-blue-600 shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Text Post (Publish)
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setActivePayloadTab('scheduled')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       activePayloadTab === 'scheduled'
@@ -1165,7 +1166,7 @@ export default function AdminPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
                       <div className="sm:col-span-3 font-mono font-bold text-blue-600">type</div>
-                      <div className="sm:col-span-3 font-mono text-slate-500">&apos;image&apos; | &apos;video&apos;</div>
+                      <div className="sm:col-span-3 font-mono text-slate-500">&apos;image&apos; | &apos;video&apos; | &apos;text&apos;</div>
                       <div className="sm:col-span-6 text-slate-600">Content type indicator to branch workflows in n8n (e.g. IF node).</div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-12 p-3 gap-2">
@@ -1224,7 +1225,7 @@ export default function AdminPage() {
                 <p className="text-xs text-slate-500">Toggle platforms on or off. Disabled platforms will be grayed out in Post Composer.</p>
               </div>
               <div className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
-                {activePlatformsCount} of 13 Platforms Enabled
+                {activePlatformsCount} of {ALL_PLATFORMS.length} Platforms Enabled
               </div>
             </div>
 
@@ -1250,7 +1251,7 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <h4 className={`text-xs font-bold ${isEnabled ? 'text-slate-900' : 'text-slate-500'}`}>
-                          {plat.name}
+                          {plat.adminName || plat.name}
                         </h4>
                         <span className={`text-[10px] font-semibold ${isEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
                           {isEnabled ? '● Active in Composer' : '○ Disabled'}
