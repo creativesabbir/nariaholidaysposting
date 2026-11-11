@@ -134,6 +134,14 @@ export function ListmonkIcon({ className = "w-4 h-4", ...props }) {
   );
 }
 
+export function TumblrIcon({ className = "w-4 h-4", ...props }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M14.7 24c-4.2 0-7-3-7-6.8v-6.8H5.1V6.4c2.9-1.3 4.6-3.6 4.9-6.4h3.7v6.2h4.8v4.2h-4.8v6.5c0 1.9.6 2.9 2.1 2.9.8 0 1.4-.2 2.1-.6l1.1 3.7c-1 .6-2.5 1.1-4.3 1.1z"/>
+    </svg>
+  );
+}
+
 export function FacebookGlobeIcon({ className = "w-3 h-3 text-[#65676B]", ...props }) {
   return (
     <svg 
@@ -168,7 +176,8 @@ export const PLATFORM_INFO = {
   google_business: { name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500', bg: 'bg-blue-50 hover:bg-blue-100' },
   slack: { name: 'Slack', icon: SlackIcon, color: 'text-[#611f69]', bg: 'bg-purple-50 hover:bg-purple-100' },
   whop: { name: 'Whop', icon: WhopIcon, color: 'text-[#FF6243]', bg: 'bg-orange-50 hover:bg-orange-100' },
-  listmonk: { name: 'Listmonk', icon: ListmonkIcon, color: 'text-[#00A98F]', bg: 'bg-emerald-50 hover:bg-emerald-100' }
+  listmonk: { name: 'Listmonk', icon: ListmonkIcon, color: 'text-[#00A98F]', bg: 'bg-emerald-50 hover:bg-emerald-100' },
+  tumblr: { name: 'Tumblr', icon: TumblrIcon, color: 'text-[#36465D]', bg: 'bg-slate-100 hover:bg-slate-200' }
 };
 
 export const ALL_SOCIAL_PLATFORMS = [
@@ -187,7 +196,8 @@ export const ALL_SOCIAL_PLATFORMS = [
   { id: 'google_business', name: 'Google Business', icon: GoogleBusinessIcon, color: 'text-blue-500', defaultEnabled: true },
   { id: 'slack', name: 'Slack', icon: SlackIcon, color: 'text-[#611f69]', defaultEnabled: true },
   { id: 'whop', name: 'Whop', icon: WhopIcon, color: 'text-[#FF6243]', defaultEnabled: true },
-  { id: 'listmonk', name: 'Listmonk', icon: ListmonkIcon, color: 'text-[#00A98F]', defaultEnabled: true }
+  { id: 'listmonk', name: 'Listmonk', icon: ListmonkIcon, color: 'text-[#00A98F]', defaultEnabled: true },
+  { id: 'tumblr', name: 'Tumblr', icon: TumblrIcon, color: 'text-[#36465D]', defaultEnabled: true }
 ];
 
 // Media / Post-Type compatibility rules per platform
@@ -207,7 +217,8 @@ export const PLATFORM_CAPABILITIES = {
   google_business: { text: true, image: true, video: true, maxImages: 1, reason: { multiImage: 'Google Business profile supports single image only' } },
   slack: { text: true, image: false, video: false, reason: { image: 'Slack supports text posts only', video: 'Slack supports text posts only' } },
   whop: { text: true, image: false, video: false, reason: { image: 'Whop supports text posts only', video: 'Whop supports text posts only' } },
-  listmonk: { text: true, image: false, video: false, reason: { image: 'Listmonk supports text posts only', video: 'Listmonk supports text posts only' } }
+  listmonk: { text: true, image: false, video: false, reason: { image: 'Listmonk supports text posts only', video: 'Listmonk supports text posts only' } },
+  tumblr: { text: true, image: true, video: true }
 };
 
 function getCapabilityBadge(caps) {

@@ -1,44 +1,24 @@
 {
   "n8n": {
-    "webhookUrl": "https://abirhasanauto13.app.n8n.cloud/webhook/nh-posting-agent",
+    "webhookUrl": "https://abirhasanauto14.app.n8n.cloud/webhook/nh-posting-agent",
     "secretToken": "",
     "autoDispatch": true,
     "lastTestedAt": "2026-11-04T04:39:35.058Z",
     "lastStatus": "success"
   },
   "platforms": {
-    "tiktok": {
-      "name": "TikTok",
-      "status": "active",
-      "enabled": true
-    },
-    "instagram": {
-      "name": "Instagram",
-      "status": "active",
-      "enabled": true
-    },
-    "linkedin": {
-      "name": "LinkedIn",
-      "status": "active",
-      "enabled": true
-    },
-    "youtube": {
-      "name": "YouTube",
-      "status": "inactive",
-      "enabled": false
-    },
-    "facebook": {
-      "name": "Facebook",
-      "status": "active",
-      "enabled": true
-    },
     "x": {
-      "name": "X / Twitter",
+      "name": "X",
+      "status": "active",
+      "enabled": true
+    },
+    "whop": {
+      "name": "Whop",
       "status": "inactive",
       "enabled": false
     },
-    "pinterest": {
-      "name": "Pinterest",
+    "slack": {
+      "name": "Slack",
       "status": "active",
       "enabled": true
     },
@@ -47,10 +27,15 @@
       "status": "inactive",
       "enabled": false
     },
-    "threads": {
-      "name": "Threads",
+    "tiktok": {
+      "name": "TikTok",
       "status": "active",
       "enabled": true
+    },
+    "tumblr": {
+      "name": "Tumblr",
+      "enabled": true,
+      "status": "active"
     },
     "bluesky": {
       "name": "Bluesky",
@@ -62,41 +47,61 @@
       "status": "active",
       "enabled": true
     },
-    "telegram": {
-      "name": "Telegram",
-      "status": "inactive",
-      "enabled": false
+    "threads": {
+      "name": "Threads",
+      "status": "active",
+      "enabled": true
     },
-    "google_business": {
-      "name": "Google Business",
-      "status": "inactive",
-      "enabled": false
+    "youtube": {
+      "name": "YouTube",
+      "status": "active",
+      "enabled": true
     },
-    "slack": {
-      "name": "Slack",
-      "enabled": true,
-      "status": "active"
+    "facebook": {
+      "name": "Facebook",
+      "status": "active",
+      "enabled": true
     },
-    "whop": {
-      "name": "Whop",
-      "enabled": true,
-      "status": "active"
+    "linkedin": {
+      "name": "LinkedIn",
+      "status": "active",
+      "enabled": true
     },
     "listmonk": {
       "name": "Listmonk",
-      "enabled": true,
-      "status": "active"
+      "status": "inactive",
+      "enabled": false
+    },
+    "telegram": {
+      "name": "Telegram",
+      "status": "active",
+      "enabled": true
     },
     "_branding": {
-      "logoUrl": "/logo.png",
       "iconUrl": "/logo-icon.png",
+      "logoUrl": "/logo.png",
       "updatedAt": "2026-11-04T06:56:18.457Z"
+    },
+    "instagram": {
+      "name": "Instagram",
+      "status": "active",
+      "enabled": true
+    },
+    "pinterest": {
+      "name": "Pinterest",
+      "status": "active",
+      "enabled": true
+    },
+    "google_business": {
+      "name": "Google Business",
+      "status": "active",
+      "enabled": true
     }
   },
   "supabase": {},
   "branding": {
-    "logoUrl": "/logo.png",
     "iconUrl": "/logo-icon.png",
+    "logoUrl": "/logo.png",
     "updatedAt": "2026-11-04T06:56:18.457Z"
   }
 }

@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.posts (
   n8n_dispatched BOOLEAN DEFAULT false
 );
 
--- 3. Automation Settings Table (n8n Webhook & 16 Platform Toggles)
+-- 3. Automation Settings Table (n8n Webhook & 17 Platform Toggles)
 CREATE TABLE IF NOT EXISTS public.settings (
   id TEXT PRIMARY KEY DEFAULT 'app_settings',
   n8n_webhook_url TEXT,
@@ -89,7 +89,8 @@ VALUES (
     "google_business": {"name": "Google Business", "enabled": true, "status": "active"},
     "slack": {"name": "Slack", "enabled": true, "status": "active"},
     "whop": {"name": "Whop", "enabled": true, "status": "active"},
-    "listmonk": {"name": "Listmonk", "enabled": true, "status": "active"}
+    "listmonk": {"name": "Listmonk", "enabled": true, "status": "active"},
+    "tumblr": {"name": "Tumblr", "enabled": true, "status": "active"}
   }'::jsonb
 )
 ON CONFLICT (id) DO NOTHING;

@@ -644,7 +644,7 @@ export default function AdminPage() {
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
               <span className="text-slate-400 mr-1.5">Platforms Online:</span>
-              <span className="font-bold text-emerald-600">{activePlatformsCount}/13</span>
+              <span className="font-bold text-emerald-600">{activePlatformsCount}/{ALL_PLATFORMS.length}</span>
             </div>
           </div>
         </div>
