@@ -1,5 +1,10 @@
+import nextConstants from 'next/constants.js';
+
+const { PHASE_DEVELOPMENT_SERVER } = nextConstants;
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const createNextConfig = (phase) => ({
+  distDir: phase === PHASE_DEVELOPMENT_SERVER ? '.next-dev' : '.next',
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
@@ -19,7 +24,7 @@ const nextConfig = {
       }
     ],
   },
-};
+});
 
-export default nextConfig;
+export default createNextConfig;
 
