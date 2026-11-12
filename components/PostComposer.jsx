@@ -281,7 +281,8 @@ export default function PostComposer({
 
     // Video Tab (single video)
     const file = files[0];
-    if (!file.type.startsWith('video/')) {
+    const hasVideoExt = /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name || '');
+    if (!file.type.startsWith('video/') && !hasVideoExt) {
       setModalConfig({
         isOpen: true,
         type: 'warning',
@@ -351,9 +352,11 @@ export default function PostComposer({
       }
     } catch (err) {
       console.error('Video upload error:', err);
+      try { URL.revokeObjectURL(localPreviewUrl); } catch (e) {}
       setVideoUploadState(prev => ({
         ...prev,
         isUploading: false,
+        previewBlobUrl: null,
         phase: 'error'
       }));
       setModalConfig({
